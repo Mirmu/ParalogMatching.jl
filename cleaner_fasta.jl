@@ -943,28 +943,3 @@ function DistanceMatrx(listofedge)
 end
 
 
-function cycleDecomp(permlist)
-    l=length(permlist)
-    totcycle=Array{Int64,1}[]
-    seed=1
-    res=copy(permlist)
-    
-    while true
-        cycle=[seed]
-        accu=permlist[seed]
-
-            while accu!=seed
-                push!(cycle,accu)
-                accu=permlist[accu]
-            end
-        push!(totcycle,cycle)
-
-        res=sort(setdiff(res,cycle))      
-        
-        length(res)!=0||break
-        
-        seed=res[1]
-        
-    end
-    return totcycle
-end
