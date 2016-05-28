@@ -536,15 +536,6 @@ function CutFasta(name,split)
 	close(h)
 end
 
-function DepleteFasta(X,frac)
-	@extract X N M q Z Sequence Header SpecName UniprotId SpecId
-
-	numb=round(Int,frac*M)
-	ind1=sort(sample(1:M,numb,replace=false))
-
-	return Alignment(N,length(ind1),q,0,Z[ind1,:],Sequence[ind1],Header[ind1],SpecName[ind1],SpecId[ind1],UniprotId[ind1]),ind1
-end
-
 function DepleteFamily(X,fam)
 	@extract X N M q Z Sequence Header SpecName UniprotId SpecId
 	#finds ind that are not belonging to unique families
