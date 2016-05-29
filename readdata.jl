@@ -1,5 +1,3 @@
-using FastaIO,Compat
-
 abstract DataSet
 
 immutable Alignment <: DataSet
@@ -17,6 +15,7 @@ end
 
 
 readdata(filename::ASCIIString) = read_fasta_alignment(filename::ASCIIString)
+
 read_fasta_alignment(filename::ASCIIString) = read_fasta_alignment(filename::ASCIIString, 1.)
 
 function read_fasta_alignment(filename::ASCIIString, max_gap_fraction::Float64)

@@ -1,4 +1,6 @@
-using Gurobi
+###########################OPTIMIZATION AND MATCHING BLOCK####################################
+
+#First the Gurobi module that solves the linear matching problem
 
 function gurobimatch{T<:AbstractFloat}(D::DenseArray{T,2})
     
@@ -57,7 +59,7 @@ function gurobimatch{T<:AbstractFloat}(D::DenseArray{T,2})
 
 
     mytime = @elapsed optimize(model)
-    println("elapsed time = $mytime")
+    #println("elapsed time = $mytime")
     status = Gurobi.get_status(model)
     
     return MatchOut(N1,
@@ -70,6 +72,7 @@ function gurobimatch{T<:AbstractFloat}(D::DenseArray{T,2})
 end
 
 
+######################HELPERS FOR THE MATCHING PROBLEM#################################
 
 #gets both the lines of alignments matched for a given list of specs
 function GetEdges(X1,X2,match,specs::Array{Int64,1})
@@ -78,9 +81,9 @@ function GetEdges(X1,X2,match,specs::Array{Int64,1})
     return ind,match[ind]
 end
 
-#Function that computes the freqency count, for a given matching.
+#Function that computes the frequency count, for a given matching.
 #nspecs corresponds to the specs added at this step, defined by their SpecId
-#You have to pass the prior
+#You have to pass the prior because it is in-place
 
 function UnitFC!(X1,X2,match,nspecs,prior)
     
@@ -97,7 +100,7 @@ function UnitFC!(X1,X2,match,nspecs,prior)
     if intersect(prior.specs,nspecs)!=[]
 
         recomp_specs=intersect(prior.specs,nspecs)
-        println("ALERT : removing species :",recomp_specs)
+        #println("ALERT : removing species :",recomp_specs)
         prior_match=prior.matching
         edg1,edg2=GetEdges(X1,X2,prior_match,recomp_specs)
         len=length(edg1)
@@ -144,6 +147,7 @@ function UnitFC!(X1,X2,match,nspecs,prior)
         M[1] = M[1] - len
     end
 
+    #check the species have been removed
     intersect(prior.specs,nspecs)==[]||error("redundent species")
 
     edg1,edg2=GetEdges(X1,X2,match,nspecs)
@@ -191,7 +195,7 @@ function UnitFC!(X1,X2,match,nspecs,prior)
     return nothing  
 end
 
-#same with the correlation matrix
+#Computes the correlation matrix knowing the frequency matrix
 
 function FullCOD!(prev::FastC,freq::FreqC)
 
@@ -211,7 +215,7 @@ function FullCOD!(prev::FastC,freq::FreqC)
     return nothing
 end
 
-
+#Converts the sequences in binary sequences for the Gaussian model
 function expandBinary(Z,s)
     a,b=size(Z)
     expZ=zeros(a,b*s)
@@ -221,51 +225,58 @@ function expandBinary(Z,s)
     return expZ
 end
 
+########################################BLOCK FOR COMPUTING THE MATCHING OF A GIVEN SPECIES, KNOWING THE PRIORS#################################
+
+#This function takes alignments, priors matrices and ONE spec, and computes the matching following various strategies
+#The helpers for the strategies are below
 
 function giveCorrection(X1,X2, freq::FreqC, invertC::Array{Float64,2}, spec::Int,strat::AbstractString)
     
     @extract X1 Spec1=SpecId Z1=Z N1=N
     @extract X2 Spec2=SpecId Z2=Z N2=N
     @extract freq M Pi
-
-    println("fam ",spec," under study")
+    
+    #first covariation strategy
 
     if strat=="covariation"
 
         ind1=find(Spec1.==spec)
         ind2=find(Spec2.==spec)
-        println("screening")
-        println(spec)
-        println(ind1)
-        println(ind2)
-
+        #takes the sequences of the "spec"
         Zb1=expandBinary(Z1[ind1,:],20)
         Zb2=expandBinary(Z2[ind2,:],20)
     
         m=M[1]+M[2]
+
+	#extracts the mean of the prior (one could add the additional contribution brought by the "spec")
+	#but it does not change the results and we consider non bijective case here
+
         vmean1=repmat(1.0/m*Pi',length(ind1))[:,1:20*N1]
         vmean2=repmat(1.0/m*Pi',length(ind2))[:,20*N1+1:end]
-    
+        
+	#The cost function as Gurobi wants it
         cost=(Zb1-vmean1)*invertC[1:20*N1,20*N1+1:end]*(Zb2-vmean2)'
         rematch=gurobimatch(cost)
+
+	#and finally the results is converted to a matching
         permres=convertPermMat(rematch.sol)
 
+    #genetic matching strategy by genetic distance
     elseif strat=="genetic"
-
+	
+    	#Computes the genetic distance between sequences and returns the matching
         cost=CostFromAnnot(X1,X2,spec)
         rematch=gurobimatch(cost)
 
         permres=FilterGenDist(convertPermMat(rematch.sol),cost)
 
+    #Greedy does like covariation, but the returned matching follows a greedy heuristic
+    #Works well also in general
+
     elseif strat=="greedy"
 
         ind1=find(Spec1.==spec)
         ind2=find(Spec2.==spec)
-        println("screening")
-        println(spec)
-        println(ind1)
-        println(ind2)
-
         Zb1=expandBinary(Z1[ind1,:],20)
         Zb2=expandBinary(Z2[ind2,:],20)
     
@@ -276,6 +287,7 @@ function giveCorrection(X1,X2, freq::FreqC, invertC::Array{Float64,2}, spec::Int
         cost=(Zb1-vmean1)*invertC[1:20*N1,20*N1+1:end]*(Zb2-vmean2)'
         permres=GreedyFromCost(cost)
 
+    #Random matching to test null hypothesis
     elseif strat=="random"
         ind1=find(Spec1.==spec)
         ind2=find(Spec2.==spec)
@@ -287,9 +299,16 @@ function giveCorrection(X1,X2, freq::FreqC, invertC::Array{Float64,2}, spec::Int
 
     end
 
-    println("for family $(spec), good matching is : ", permres)
+    #println("for family $(spec), good matching is : ", permres)
     return permres
 end
+
+##################################HELPERS FOR THE MATCHING########################
+
+#Convert the permutation matrix of Gurobi into a matchin array
+#The matching format is 
+#ind1:rows of the first alignment
+#ind2:matched rowd of the second alignment
 
 function convertPermMat(mat)
     len1,len2=size(mat)
@@ -297,6 +316,9 @@ function convertPermMat(mat)
     ind2=[findfirst(mat[i,:]) for i in ind1]
     return ind1,ind2
 end
+
+
+#Inverts the matrix of correlation after adding a pseudo count
 
 function inverseWithPseudo!(prev::FastC,freq::FreqC,pc::Float64)
     @extract freq M Pij Pi
@@ -308,18 +330,9 @@ function inverseWithPseudo!(prev::FastC,freq::FreqC,pc::Float64)
     return inter
 end
 
-function Restrict_inverseWithPseudo!(prev::FastC,freq::FreqC,pc::Float64,restrict)
-    @extract freq M Pij Pi
-    Mfake=round(Int,((M[1]+M[2])*pc-M[2])/(1-pc))
 
-    add_pseudocount!(freq,Mfake)
-    FullCOD!(prev,freq)
-    inter=inv(cholfact(prev.Cij[restrict,restrict]))
-    return inter
-end
+#Adds a pseudo count with Mfake sequences
 
-#this function should be written as banged but I am too lazy at the moment
-#hence it is inconsistent for the return style
 
 function add_pseudocount!(freq::FreqC, Mfake::Int64)
     
@@ -337,8 +350,7 @@ function add_pseudocount!(freq::FreqC, Mfake::Int64)
     Pij_c = 1 / (m+Mfake) * Pij .+ pcq / q
     Pi_c = 1 / (m+Mfake) * Pi .+ pcq
 
-    
-
+   
     i0 = 0
     for i = 1:N
     xr = i0 + (1:s)
@@ -353,7 +365,6 @@ function add_pseudocount!(freq::FreqC, Mfake::Int64)
     Pi[:]=(Mfake+m)*Pi_c[:]
     Pij[:]=(Mfake+m)*Pij_c[:]
     M[:]=[M[1],M[2]+Mfake][:]
-    # return FreqC((Mfake+m)*Pij_c,(Mfake+m)*Pi_c,specs,[M[1],M[2]+Mfake])
 end
 
 
@@ -383,7 +394,7 @@ function FilterGenDist(match,cost)
     res1=Int64[]
     res2=Int64[]
 
-    println(collect(zip(match...)))
+    #println(collect(zip(match...)))
 
     for (i,j) in zip(match...)
         abs(cost[i,j])<100||continue
@@ -419,9 +430,3 @@ function findnth_mat(A::Array{Float64,2},rank::Int64)
     return i,j
 end
 
-function ReturnRateOfWrong(matching,X1)
-    specs=unique(X1.SpecId)
-    for i in specs
-        ind=find(X1.SpecId.==i)
-        matching[ind].==sort(matching[ind])
-end
