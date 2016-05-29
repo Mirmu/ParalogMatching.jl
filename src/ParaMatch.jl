@@ -1,7 +1,6 @@
 module ParaMatch
 
 using FastaIO, MacroUtils, Iterators, Compat
-using HDF5, JLD
 using Distributions
 using Gurobi
 
