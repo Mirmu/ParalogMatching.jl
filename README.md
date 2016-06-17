@@ -24,7 +24,7 @@ The package is organized as follows: in the source folder, routines can be found
 
 6 `matching_fasta.jl` contains the routines performing the whole matching of both Alignments
 
-7 `Plotting.jl` contains various scoring/plotting functions to assess the quality of the solution
+7 `plotting.jl` contains various scoring/plotting functions to assess the quality of the solution
 
 8 `ParaMatch.jl` is a wrapper Module for Julia Package.
 

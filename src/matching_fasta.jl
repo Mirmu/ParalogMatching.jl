@@ -2,15 +2,15 @@
 #Returns the initial matching between single species
 #Works only for Harmonized FASTA
 
-function StartMatching(X1,X2)
+function start_matching(X1,X2)
 
 	@extract X1 SpecId1=SpecId
 	@extract X2 SpecId2=SpecId
 	match=zeros(SpecId1)
 	#finds the indices of the species with one single sequence
 
-	ind1=IndexOfUnique(SpecId1)
-	ind2=IndexOfUnique(SpecId2)
+	ind1=index_of_unique(SpecId1)
+	ind2=index_of_unique(SpecId2)
 
 	candi=intersect(SpecId1[ind1],SpecId2[ind2])
 
@@ -25,10 +25,10 @@ end
 #initializes the problem by preparing the fasta, allocating frequency matrix
 #and correlation matrices, inverting them and returning them
 
-function Initialize(Xi1,Xi2,cut)
+function initialize(Xi1,Xi2,cut)
 	println("initializing the matching, removing families larger than $(cut)...")
-	X1,X2=HarmonizeFasta(OrderAndCut(Xi1,cut),OrderAndCut(Xi2,cut))
-	match=StartMatching(X1,X2)
+	X1,X2=harmonize_fasta(order_and_cut(Xi1,cut),order_and_cut(Xi2,cut))
+	match=start_matching(X1,X2)
 
 	#Computing the prior correlation matrix and interaction matrix
 	freq=nullF(X1,X2)
@@ -38,35 +38,35 @@ function Initialize(Xi1,Xi2,cut)
 	single=X1.SpecId[find(match)]
 
 	#computes the freq matrix for the given matched species "single"
-	UnitFC!(X1,X2,match,single,freq)
+	unitFC!(X1,X2,match,single,freq)
 
 	#Computes the corr matrix from the freq matrix	
-	FullCOD!(corr,freq)
+	full_COD!(corr,freq)
 
 	#Finally compute the inverse of the corr matrix
-	invC=inverseWithPseudo!(corr,freq,0.8)
+	invC=inverse_with_pseudo!(corr,freq,0.8)
 
 	println("Setup computed")
 	return X1,X2,match,freq,corr,invC
 end
 
-#ParCorr gathers for each species in specl, the matching obtained by the "strat" strategy
+#par_corr gathers for each species in specl, the matching obtained by the "strat" strategy
 #And returns an array of those matchings
 
-function ParCorr(X1,X2, freq::FreqC, invertC, specl::Array{Int,1},strat)
-	res=[giveCorrection(X1,X2, freq, invertC, i,strat) for i in specl]
+function par_corr(X1,X2, freq::FreqC, invertC, specl::Array{Int,1},strat)
+	res=[give_correction(X1,X2, freq, invertC, i,strat) for i in specl]
 	return res
 end
 
-#Entropy computes the number of potential matchings for each species
+#spec_entropy computes the number of potential matchings for each species
 #And returns the ordered list, from the easiest fams to the hardest
 #WARNING: Works for harmonized Fasta only 
 
-function Entropy(X1,X2)
+function spec_entropy(X1,X2)
 	@extract X1 SpecId1=SpecId
 	@extract X2 SpecId2=SpecId
-	bib1=Tally(SpecId1)
-	bib2=Tally(SpecId2)
+	bib1=tally(SpecId1)
+	bib2=tally(SpecId2)
 
 	entropy=Tuple{Int64,Float64}[]
 
@@ -87,7 +87,7 @@ end
 #First a helper...
 #given a list of specs with their respective matching within species, it updates the global match vector
 
-function ApplyMatching!(X1,X2,match,lspec,lmatch)
+function apply_matching!(X1,X2,match,lspec,lmatch)
 	@extract X1 SpecId1=SpecId
 	@extract X2 SpecId2=SpecId
 	length(lspec)==length(lmatch)||error("data non compatible")
@@ -108,14 +108,14 @@ end
 #or "genetic": computes the matching from genetic proximity (if FASTA contains genetic position info)
 #or "random": computes a random matching for null hypothesis
 #or "greedy": computes a matching from a greedy strategy with the co evolution signal
-#the argument "a" should be the output of the Initialize function that can be found in Fasta_Manip.jl
+#the argument "a" should be the output of the initialize function that can be found in Fasta_Manip.jl
 
-function RunMatching(a,batch,strat::AbstractString)
-	#takes the ouput of Initialize
+function run_matching(a,batch,strat::AbstractString)
+	#takes the ouput of initialize
 	X1,X2,match,freq,corr,invC=a
 	
 	#Computes the entropy of the families and batch them from easiest to hardest
-	spec=Entropy(X1,X2)
+	spec=spec_entropy(X1,X2)
 	len=length(spec)
 	batchl=[spec[i*batch+1:min((i+1)*batch,len)] for i in 0:div(len,batch)]
 
@@ -126,19 +126,19 @@ function RunMatching(a,batch,strat::AbstractString)
 		el!=[]||continue
 	
 		#Performs the matching for each species of the batch
-		res=ParCorr(X1,X2,freq,invC,el,strat)
+		res=par_corr(X1,X2,freq,invC,el,strat)
 		println("batch of species")
 		println(el)
 		println(res)
 		#Applies the matching to the global matching vector
-		ApplyMatching!(X1,X2,match,el,res)
+		apply_matching!(X1,X2,match,el,res)
 
 		if strat=="covariation"||strat=="greedy"
 			println("Recomputing the model")
 			#Updates the freq and corr matrices, and its inverse
-			UnitFC!(X1,X2,match,el,freq)
-			FullCOD!(corr,freq)
-			invC=inverseWithPseudo!(corr,freq,0.8)
+			unitFC!(X1,X2,match,el,freq)
+			full_COD!(corr,freq)
+			invC=inverse_with_pseudo!(corr,freq,0.8)
 		end
 
 		#takes a snapshot of the matching being built

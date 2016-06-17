@@ -4,7 +4,7 @@ using FastaIO, MacroUtils, Iterators, Compat
 using Distributions
 using Gurobi
 
-export readdata, Initialize, RunMatching
+export readdata, initialize, run_matching
 
 #Including the reader for the FASTA
 include("readdata.jl")
@@ -25,6 +25,6 @@ include("utils.jl")
 include("matching_fasta.jl")
 
 #Including the routines for evaluating/plotting the solution
-include("Plotting.jl")
+include("plotting.jl")
 
 end

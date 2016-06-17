@@ -1,9 +1,9 @@
 ######################BLOCK FOR MANIPULATION OF THE ALIGNMENTS###################
 #Orders and removes families that are too large
 
-function OrderAndCut(Xtot::Alignment,cutoff::Int64)
+function order_and_cut(Xtot::Alignment,cutoff::Int64)
  	@extract Xtot SpecName N q split Z Sequence UniprotId SpecId Header
- 	cand=Tally(SpecName)
+ 	cand=tally(SpecName)
  	ncand=[a[1] for a in filter(x->x[2]<=cutoff,cand)]
  	kept=Int64[]
 
@@ -22,7 +22,7 @@ end
 #Giving those species a common labeling
 #This routine is a bit inefficient
 
-function HarmonizeFasta(X1,X2)
+function harmonize_fasta(X1,X2)
     @extract X1 SpecName1=SpecName N1=N q1=q Z1=Z Sequence1=Sequence UniprotId1=UniprotId SpecId1=SpecId Header1=Header
     @extract X2 SpecName2=SpecName N2=N q2=q Z2=Z Sequence2=Sequence UniprotId2=UniprotId SpecId2=SpecId Header2=Header    
     _s1 = unique(SpecName1)
@@ -84,7 +84,7 @@ end
 
 
 #Rewrites the output as a FASTA for two given Alignments and a given matching, under the "name"
-function RewriteFastaMatch(X1,X2,match,name)
+function rewrite_fasta_match(X1,X2,match,name)
 	g=open(name,"w")
 	for (i,edge) in enumerate(match)
 		edge!=0.||continue
@@ -102,7 +102,7 @@ end
 #Computes the Fasta that is the intersection of two FASTA of names "names1" and "names2"
 #If no output, it simply returns the overlap value, with both lengths of the FASTA
 
-function OverlapFasta(name1,name2;opt::AbstractString="no-out")
+function overlap_fasta(name1,name2;opt::AbstractString="no-out")
 	X1=readdata(name1)
 	X2=readdata(name2)
 	pool=unique(X1.SpecName)
@@ -131,7 +131,7 @@ end
 #Computes the FASTA that is the Union of the two FASTA of names "names1" and "names2"
 #Same return than Overlap
 
-function UnionFasta(name1,name2;opt::AbstractString="no-out")
+function union_fasta(name1,name2;opt::AbstractString="no-out")
 	X1=readdata(name1)
 	X2=readdata(name2)
 	pool=unique(X1.SpecName)

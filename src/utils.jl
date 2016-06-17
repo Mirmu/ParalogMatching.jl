@@ -75,7 +75,7 @@ end
 ######################HELPERS FOR THE MATCHING PROBLEM#################################
 
 #gets both the lines of alignments matched for a given list of specs
-function GetEdges(X1,X2,match,specs::Array{Int64,1})
+function get_edges(X1,X2,match,specs::Array{Int64,1})
     ind=find([a in specs for a in X1.SpecId])
     filter!(x->match[x]!=0,ind)
     return ind,match[ind]
@@ -85,7 +85,7 @@ end
 #nspecs corresponds to the specs added at this step, defined by their SpecId
 #You have to pass the prior because it is in-place
 
-function UnitFC!(X1,X2,match,nspecs,prior)
+function unitFC!(X1,X2,match,nspecs,prior)
     
     @extract X1 N1=N Z1=Z q N1=N
     @extract X2 N2=N Z2=Z N2=N
@@ -102,7 +102,7 @@ function UnitFC!(X1,X2,match,nspecs,prior)
         recomp_specs=intersect(prior.specs,nspecs)
         #println("ALERT : removing species :",recomp_specs)
         prior_match=prior.matching
-        edg1,edg2=GetEdges(X1,X2,prior_match,recomp_specs)
+        edg1,edg2=get_edges(X1,X2,prior_match,recomp_specs)
         len=length(edg1)
 
         Z1a=Z1[edg1,:]
@@ -150,7 +150,7 @@ function UnitFC!(X1,X2,match,nspecs,prior)
     #check the species have been removed
     intersect(prior.specs,nspecs)==[]||error("redundent species")
 
-    edg1,edg2=GetEdges(X1,X2,match,nspecs)
+    edg1,edg2=get_edges(X1,X2,match,nspecs)
     len=length(edg1)
 
     Z1a=Z1[edg1,:]
@@ -197,7 +197,7 @@ end
 
 #Computes the correlation matrix knowing the frequency matrix
 
-function FullCOD!(prev::FastC,freq::FreqC)
+function full_COD!(prev::FastC,freq::FreqC)
 
     @extract freq Pij Pi specs M
     @extract prev Cij
@@ -216,7 +216,7 @@ function FullCOD!(prev::FastC,freq::FreqC)
 end
 
 #Converts the sequences in binary sequences for the Gaussian model
-function expandBinary(Z,s)
+function expand_binary(Z,s)
     a,b=size(Z)
     expZ=zeros(a,b*s)
     for i in 1:b, j in 1:a
@@ -230,7 +230,7 @@ end
 #This function takes alignments, priors matrices and ONE spec, and computes the matching following various strategies
 #The helpers for the strategies are below
 
-function giveCorrection(X1,X2, freq::FreqC, invertC::Array{Float64,2}, spec::Int,strat::AbstractString)
+function give_correction(X1,X2, freq::FreqC, invertC::Array{Float64,2}, spec::Int,strat::AbstractString)
     
     @extract X1 Spec1=SpecId Z1=Z N1=N
     @extract X2 Spec2=SpecId Z2=Z N2=N
@@ -243,8 +243,8 @@ function giveCorrection(X1,X2, freq::FreqC, invertC::Array{Float64,2}, spec::Int
         ind1=find(Spec1.==spec)
         ind2=find(Spec2.==spec)
         #takes the sequences of the "spec"
-        Zb1=expandBinary(Z1[ind1,:],20)
-        Zb2=expandBinary(Z2[ind2,:],20)
+        Zb1=expand_binary(Z1[ind1,:],20)
+        Zb2=expand_binary(Z2[ind2,:],20)
     
         m=M[1]+M[2]
 
@@ -259,16 +259,16 @@ function giveCorrection(X1,X2, freq::FreqC, invertC::Array{Float64,2}, spec::Int
         rematch=gurobimatch(cost)
 
 	#and finally the results is converted to a matching
-        permres=convertPermMat(rematch.sol)
+        permres=convert_perm_mat(rematch.sol)
 
     #genetic matching strategy by genetic distance
     elseif strat=="genetic"
 	
     	#Computes the genetic distance between sequences and returns the matching
-        cost=CostFromAnnot(X1,X2,spec)
+        cost=cost_from_annot(X1,X2,spec)
         rematch=gurobimatch(cost)
 
-        permres=FilterGenDist(convertPermMat(rematch.sol),cost)
+        permres=filter_gen_dist(convert_perm_mat(rematch.sol),cost)
 
     #Greedy does like covariation, but the returned matching follows a greedy heuristic
     #Works well also in general
@@ -277,15 +277,15 @@ function giveCorrection(X1,X2, freq::FreqC, invertC::Array{Float64,2}, spec::Int
 
         ind1=find(Spec1.==spec)
         ind2=find(Spec2.==spec)
-        Zb1=expandBinary(Z1[ind1,:],20)
-        Zb2=expandBinary(Z2[ind2,:],20)
+        Zb1=expand_binary(Z1[ind1,:],20)
+        Zb2=expand_binary(Z2[ind2,:],20)
     
         m=M[1]+M[2]
         vmean1=repmat(1.0/m*Pi',length(ind1))[:,1:20*N1]
         vmean2=repmat(1.0/m*Pi',length(ind2))[:,20*N1+1:end]
     
         cost=(Zb1-vmean1)*invertC[1:20*N1,20*N1+1:end]*(Zb2-vmean2)'
-        permres=GreedyFromCost(cost)
+        permres=greedy_from_cost(cost)
 
     #Random matching to test null hypothesis
     elseif strat=="random"
@@ -310,7 +310,7 @@ end
 #ind1:rows of the first alignment
 #ind2:matched rowd of the second alignment
 
-function convertPermMat(mat)
+function convert_perm_mat(mat)
     len1,len2=size(mat)
     ind1=find([find(mat[i,:])!=[] for i in 1:len1])
     ind2=[findfirst(mat[i,:]) for i in ind1]
@@ -320,12 +320,12 @@ end
 
 #Inverts the matrix of correlation after adding a pseudo count
 
-function inverseWithPseudo!(prev::FastC,freq::FreqC,pc::Float64)
+function inverse_with_pseudo!(prev::FastC,freq::FreqC,pc::Float64)
     @extract freq M Pij Pi
     Mfake=round(Int,((M[1]+M[2])*pc-M[2])/(1-pc))
 
     add_pseudocount!(freq,Mfake)
-    FullCOD!(prev,freq)
+    full_COD!(prev,freq)
     inter=inv(cholfact(prev.Cij))
     return inter
 end
@@ -380,7 +380,7 @@ function annot2num(annotb::AbstractString)
     return dot(reverse(dgts), mbs)
 end
 
-function CostFromAnnot(X1,X2,spec)
+function cost_from_annot(X1,X2,spec)
     @extract X1 Spec1=SpecId Z1=Z N1=N
     @extract X2 Spec2=SpecId Z2=Z N2=N
 
@@ -390,7 +390,7 @@ function CostFromAnnot(X1,X2,spec)
     return cost
 end
 
-function FilterGenDist(match,cost)
+function filter_gen_dist(match,cost)
     res1=Int64[]
     res2=Int64[]
 
@@ -404,7 +404,7 @@ function FilterGenDist(match,cost)
     return res1,res2
 end
 
-function GreedyFromCost(mat)
+function greedy_from_cost(mat)
     len1,len2=size(mat)
     count=0
     perm1=Int64[]

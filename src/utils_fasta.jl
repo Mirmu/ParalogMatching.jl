@@ -1,6 +1,6 @@
 #very useful function that classifies elements along with their counts in a given set
 
-function Tally(list)
+function tally(list)
 	slist=sort(list)
 	counter=0
 	comp=slist[1]
@@ -22,7 +22,7 @@ end
 #Returns the indexes of the list that have unique labels
 #WARNING !: works only for sorted lists 
 
-function IndexOfUnique(list)
+function index_of_unique(list)
 	list==sort(list)||error("would you mind sorting the list ?")
 	change=list[1]
 	ind=Int64[]

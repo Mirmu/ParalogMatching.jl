@@ -86,7 +86,7 @@ function read_fasta_alignment(filename::ASCIIString, max_gap_fraction::Float64)
 
     close(f)
 
-    SpecId,SpecName,UniprotId = ComputeSpec(Header)
+    SpecId,SpecName,UniprotId = compute_spec(Header)
 
     Fa = Alignment(size(Z,1),size(Z,2), Int(maximum(Z)), 12,  Z', Sequence, Header, SpecName, SpecId,UniprotId)
 
@@ -136,7 +136,7 @@ function specname(s::ASCIIString)
 end
 
 
-function ComputeSpec(Header::Array{ASCIIString,1})
+function compute_spec(Header::Array{ASCIIString,1})
 
     M = length(Header)
 
