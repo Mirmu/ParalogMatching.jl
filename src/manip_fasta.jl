@@ -54,7 +54,7 @@ function HarmonizeFasta(X1,X2)
 
     lind2 = Int[]
     for i in eachindex(ind2)
-        val = findfirst(kept,SpecName1[ind2[i][1]])
+        val = findfirst(kept,SpecName2[ind2[i][1]])
         for j in ind2[i]
             SpecId2[j] = val
             push!(lind2,j)
