@@ -90,7 +90,7 @@ function unitFC!(X1, X2, match, nspecs, prior)
     Ns  = N * s
 
     # First removing the species to be recomputed
-    if intersect(prior.specs, nspecs) != []
+    if !isempty(intersect(prior.specs, nspecs))
 
         recomp_specs = intersect(prior.specs, nspecs)
         #println("ALERT : removing species :", recomp_specs)
@@ -141,7 +141,7 @@ function unitFC!(X1, X2, match, nspecs, prior)
     end
 
     # check the species have been removed
-    intersect(prior.specs, nspecs) == [] || error("redundent species")
+    isempty(intersect(prior.specs, nspecs)) || error("redundant species")
 
     edg1, edg2 = get_edges(X1, X2, match, nspecs)
     len = length(edg1)
@@ -294,7 +294,7 @@ end
 # ind2:matched rowd of the second alignment
 function convert_perm_mat(mat)
     len1, len2 = size(mat)
-    ind1 = find([find(mat[i,:])!=[] for i in 1:len1])
+    ind1 = find([!isempty(find(mat[i,:])) for i in 1:len1])
     ind2 = [findfirst(mat[i,:]) for i in ind1]
     return ind1, ind2
 end

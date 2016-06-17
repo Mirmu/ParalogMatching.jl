@@ -114,7 +114,7 @@ function full_edges_scores(X1, X2, match)
     Meff = freq.M[1] + freq.M[2]
     aver = freq.Pi / Meff
     flag = 1
-    ordering = Array{Tuple{Tuple{Float64,Float64},Float64},1}[]
+    ordering = Vector{Tuple{Tuple{Float64,Float64},Float64}}[]
     suborder = Tuple{Tuple{Float64,Float64},Float64}[]
 
     # Creates all the possibles within species match
@@ -149,7 +149,7 @@ function full_edges_scores(X1, X2, match)
 end
 
 function selecting_edges(ordering, thres)
-    order2 = Array{Tuple{Tuple{Float64,Float64},Float64},1}[]
+    order2 = Vector{Tuple{Tuple{Float64,Float64},Float64}}[]
     for el in ordering
 	len = length(el)
 	extr = sort(el,by=x->x[2])[1:min(len,thres)]

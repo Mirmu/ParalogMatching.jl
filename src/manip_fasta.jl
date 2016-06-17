@@ -11,7 +11,7 @@ function order_and_cut(Xtot::Alignment, cutoff::Int64)
 
     # Orders so that families have contiguous sequences organized in blocks
     for fam in ncand
-	kept = [kept; find(x->x==fam, SpecName)]
+	append!(kept, find(x->x==fam, SpecName))
     end
 
     return Alignment(N, length(kept), q, split, Z[kept,:],

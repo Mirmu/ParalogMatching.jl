@@ -117,7 +117,7 @@ function run_matching(a, batch, strat::AbstractString)
 
     # For each batch...
     for el in batchl
-	el != [] || continue
+	isempty(el) && continue
 
 	# Performs the matching for each species of the batch
 	res = par_corr(X1, X2, freq, invC, el, strat)
