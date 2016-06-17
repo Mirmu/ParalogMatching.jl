@@ -29,7 +29,7 @@ function read_fasta_alignment(filename::ASCIIString, max_gap_fraction::Float64)
     seqs = Int[]
     inds = Int[]
     fseqlen = 0
-   
+
     for (name, seq) in f
         ngaps = 0
         if f.num_parsed == 1
@@ -70,8 +70,8 @@ function read_fasta_alignment(filename::ASCIIString, max_gap_fraction::Float64)
     Sequence =  Array(ASCIIString,length(seqs));
     seqid = 1
     for (name, seq) in f
-#        
-#        Header[seqid] = specname.captures[1];
+        #        
+        #        Header[seqid] = specname.captures[1];
         Header[seqid] = name
         Sequence[seqid] = seq
         seqs[end] < f.num_parsed && break
@@ -103,7 +103,7 @@ function specname(s::ASCIIString)
         UniprotId,SpecName = match(r"^([A-Z,0-9].*?)\_([A-Z,0-9].*?)/", s).captures
         return (convert(ASCIIString,UniprotId),convert(ASCIIString,SpecName))
 
-    
+
     elseif ismatch(r"^(.*?)with(.*?)/(.*?)$",s)
         SpecName = convert(ASCIIString,match(r"^(.*?)with(.*?)/(.*?)$", s).captures[3])
         UniprotId= "000000"
@@ -126,7 +126,7 @@ function specname(s::ASCIIString)
             i2 = i
             if flag2 == 1
                 error("badly formed string")
-                end
+            end
             flag2 = 1        
         end
     end
@@ -153,7 +153,7 @@ function compute_spec(Header::Array{ASCIIString,1})
     nspec = length(specunique)
     SpecId = zeros(Int,M)
     idx = zeros(Int,M)
-  
+
     @inbounds for j=1:M
         nname = length(SpecName[j])
         for i=1:nspec
@@ -166,10 +166,8 @@ function compute_spec(Header::Array{ASCIIString,1})
     return SpecId,SpecName,UniprotId
 end
 
-
-
 @compat let alphabet = [ 1,21, 2, 3, 4, 5, 6, 7, 8,21, 9,10,11,12,21,13,14,15,16,17,21,18,19,21,20]
-               # A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y
+    # A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y
     global letter2num
     function letter2num(c::Union{Char,UInt8})
         i = UInt(c) - 0x40

@@ -3,7 +3,7 @@
 #First the Gurobi module that solves the linear matching problem
 
 function gurobimatch{T<:AbstractFloat}(D::DenseArray{T,2})
-    
+
     env = Gurobi.Env()
     setparam!(env, "OutputFlag", false) # set verbose to 0
     N1,N2 = size(D)
@@ -61,7 +61,7 @@ function gurobimatch{T<:AbstractFloat}(D::DenseArray{T,2})
     mytime = @elapsed optimize(model)
     #println("elapsed time = $mytime")
     status = Gurobi.get_status(model)
-    
+
     return MatchOut(N1,
                     N2, 
                     get_objval(model),
@@ -86,11 +86,11 @@ end
 #You have to pass the prior because it is in-place
 
 function unitFC!(X1,X2,match,nspecs,prior)
-    
+
     @extract X1 N1=N Z1=Z q N1=N
     @extract X2 N2=N Z2=Z N2=N
     @extract prior Pij Pi M
-    
+
 
     N=N1+N2
     s = q - 1 
@@ -108,7 +108,7 @@ function unitFC!(X1,X2,match,nspecs,prior)
         Z1a=Z1[edg1,:]
         Z2a=Z2[edg2,:]
         Zt = (hcat(Z1a,Z2a))'
-        
+
         ZZ = Vector{Int8}[vec(Zt[i,:]) for i = 1:N]
 
         #first removing 
@@ -156,7 +156,7 @@ function unitFC!(X1,X2,match,nspecs,prior)
     Z1a=Z1[edg1,:]
     Z2a=Z2[edg2,:]
     Zt = (hcat(Z1a,Z2a))'
-    
+
     ZZ = Vector{Int8}[vec(Zt[i,:]) for i = 1:N]
 
     @inbounds begin
@@ -231,11 +231,11 @@ end
 #The helpers for the strategies are below
 
 function give_correction(X1,X2, freq::FreqC, invertC::Array{Float64,2}, spec::Int,strat::AbstractString)
-    
+
     @extract X1 Spec1=SpecId Z1=Z N1=N
     @extract X2 Spec2=SpecId Z2=Z N2=N
     @extract freq M Pi
-    
+
     #first covariation strategy
 
     if strat=="covariation"
@@ -245,33 +245,33 @@ function give_correction(X1,X2, freq::FreqC, invertC::Array{Float64,2}, spec::In
         #takes the sequences of the "spec"
         Zb1=expand_binary(Z1[ind1,:],20)
         Zb2=expand_binary(Z2[ind2,:],20)
-    
+
         m=M[1]+M[2]
 
-	#extracts the mean of the prior (one could add the additional contribution brought by the "spec")
-	#but it does not change the results and we consider non bijective case here
+        #extracts the mean of the prior (one could add the additional contribution brought by the "spec")
+        #but it does not change the results and we consider non bijective case here
 
         vmean1=repmat(1.0/m*Pi',length(ind1))[:,1:20*N1]
         vmean2=repmat(1.0/m*Pi',length(ind2))[:,20*N1+1:end]
-        
-	#The cost function as Gurobi wants it
+
+        #The cost function as Gurobi wants it
         cost=(Zb1-vmean1)*invertC[1:20*N1,20*N1+1:end]*(Zb2-vmean2)'
         rematch=gurobimatch(cost)
 
-	#and finally the results is converted to a matching
+        #and finally the results is converted to a matching
         permres=convert_perm_mat(rematch.sol)
 
-    #genetic matching strategy by genetic distance
+        #genetic matching strategy by genetic distance
     elseif strat=="genetic"
-	
-    	#Computes the genetic distance between sequences and returns the matching
+
+        #Computes the genetic distance between sequences and returns the matching
         cost=cost_from_annot(X1,X2,spec)
         rematch=gurobimatch(cost)
 
         permres=filter_gen_dist(convert_perm_mat(rematch.sol),cost)
 
-    #Greedy does like covariation, but the returned matching follows a greedy heuristic
-    #Works well also in general
+        #Greedy does like covariation, but the returned matching follows a greedy heuristic
+        #Works well also in general
 
     elseif strat=="greedy"
 
@@ -279,21 +279,21 @@ function give_correction(X1,X2, freq::FreqC, invertC::Array{Float64,2}, spec::In
         ind2=find(Spec2.==spec)
         Zb1=expand_binary(Z1[ind1,:],20)
         Zb2=expand_binary(Z2[ind2,:],20)
-    
+
         m=M[1]+M[2]
         vmean1=repmat(1.0/m*Pi',length(ind1))[:,1:20*N1]
         vmean2=repmat(1.0/m*Pi',length(ind2))[:,20*N1+1:end]
-    
+
         cost=(Zb1-vmean1)*invertC[1:20*N1,20*N1+1:end]*(Zb2-vmean2)'
         permres=greedy_from_cost(cost)
 
-    #Random matching to test null hypothesis
+        #Random matching to test null hypothesis
     elseif strat=="random"
         ind1=find(Spec1.==spec)
         ind2=find(Spec2.==spec)
         mini=min(length(ind1),length(ind2))
         permres=(randperm(length(ind1))[1:mini],randperm(length(ind2))[1:mini])
-    
+
     else 
         error("option not known")
 
@@ -335,11 +335,11 @@ end
 
 
 function add_pseudocount!(freq::FreqC, Mfake::Int64)
-    
+
     Mfake!=0||return nothing
 
     @extract freq Pi Pij M specs q
-    
+
     s = q - 1
     N=round(Int,length(Pi)/s)
     m=M[1]+M[2]
@@ -350,11 +350,11 @@ function add_pseudocount!(freq::FreqC, Mfake::Int64)
     Pij_c = 1 / (m+Mfake) * Pij .+ pcq / q
     Pi_c = 1 / (m+Mfake) * Pi .+ pcq
 
-   
+
     i0 = 0
     for i = 1:N
-    xr = i0 + (1:s)
-    Pij_c[xr, xr] = 1 / (m+Mfake) * Pij[xr, xr]
+        xr = i0 + (1:s)
+        Pij_c[xr, xr] = 1 / (m+Mfake) * Pij[xr, xr]
         for alpha = 1:s
             x = i0 + alpha
             Pij_c[x, x] += pcq
@@ -429,4 +429,3 @@ function findnth_mat(A::Array{Float64,2},rank::Int64)
     i,j= ind2sub(size(A), ls[rank])
     return i,j
 end
-
