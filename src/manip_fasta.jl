@@ -72,7 +72,7 @@ end
 #####################BLOCK FOR WRITING FASTA FROM ALIGNMENTS OBJECTS########
 #Writes a given Alignments under "name"
 
-function WriteFasta(X1,name)
+function write_fasta(X1,name)
     g=open(name,"w")
     for i in 1:(X1.M)
 	head=join([">",X1.Header[i]])
