@@ -6,25 +6,25 @@ using Gurobi
 
 export readdata, initialize, run_matching
 
-#Including the reader for the FASTA
+# Including the reader for the FASTA
 include("readdata.jl")
 
-#Including some utilities for the FASTA/Alignment manip
+# Including some utilities for the FASTA/Alignment manip
 include("utils_fasta.jl")
 
-#Including the routines for manipulation/Preparing for merging the Alignment
+# Including the routines for manipulation/Preparing for merging the Alignment
 include("manip_fasta.jl")
 
-#Including the types used for the Matching
+# Including the types used for the Matching
 include("types.jl")
 
-#Utils.jl contains the matching/optimization routines
+# utils.jl contains the matching/optimization routines
 include("utils.jl")
 
-#Performing the iterative/progressive matching task
+# Performing the iterative/progressive matching task
 include("matching_fasta.jl")
 
-#Including the routines for evaluating/plotting the solution
+# Including the routines for evaluating/plotting the solution
 include("plotting.jl")
 
 end
