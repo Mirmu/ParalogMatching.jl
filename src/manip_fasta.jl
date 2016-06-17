@@ -23,32 +23,49 @@ end
 #This routine is a bit inefficient
 
 function HarmonizeFasta(X1,X2)
-	@extract X1 SpecName1=SpecName N1=N q1=q Z1=Z Sequence1=Sequence UniprotId1=UniprotId SpecId1=SpecId Header1=Header
-	@extract X2 SpecName2=SpecName N2=N q2=q Z2=Z Sequence2=Sequence UniprotId2=UniprotId SpecId2=SpecId Header2=Header
+    @extract X1 SpecName1=SpecName N1=N q1=q Z1=Z Sequence1=Sequence UniprotId1=UniprotId SpecId1=SpecId Header1=Header
+    @extract X2 SpecName2=SpecName N2=N q2=q Z2=Z Sequence2=Sequence UniprotId2=UniprotId SpecId2=SpecId Header2=Header    
+    _s1 = unique(SpecName1)
+    _s2 = unique(SpecName2)
+    kept = intersect(_s1,_s2)
 
-	kept=unique(intersect(SpecName1,SpecName2))
-	ind1=Int64[]
-	ind2=Int64[]
+    ind1 = Vector{Vector{Int}}(length(kept))
+    ctr = 0
+    for fam in kept
+        ctr += 1
+        ind1[ctr] = find(x->x==fam, SpecName1)
+    end
 
-	for fam in kept
-		ind1=[ind1;find(x->x==fam,SpecName1)]
-		ind2=[ind2;find(x->x==fam,SpecName2)]
-	end
+    ind2 = Vector{Vector{Int}}(length(kept))
+    ctr = 0
+    for fam in kept
+        ctr += 1
+        ind2[ctr] = find(x->x==fam, SpecName2)
+    end
 
-	#we perform the re labeling of SpecId based over a new, ordered labeling
-	#the new labeling is given by kept
-	for i in ind1
-		SpecId1[i]=findfirst(kept,SpecName1[i])
-	end
-	
-	for i in ind2
-		SpecId2[i]=findfirst(kept,SpecName2[i])
-	end
+    lind1 = Int[]
+    for i in eachindex(ind1)
+        val = findfirst(kept,SpecName1[ind1[i][1]])
+        for j in ind1[i]
+            SpecId1[j] = val
+            push!(lind1,j)
+        end
+    end
 
+    lind2 = Int[]
+    for i in eachindex(ind2)
+        val = findfirst(kept,SpecName1[ind2[i][1]])
+        for j in ind2[i]
+            SpecId2[j] = val
+            push!(lind2,j)
+        end
+    end
+        
+    al1=Alignment(N1,length(lind1),q1,0,Z1[lind1,:],Sequence1[lind1],Header1[lind1],SpecName1[lind1],SpecId1[lind1],UniprotId1[lind1])
+    al2=Alignment(N2,length(lind2),q2,0,Z2[lind2,:],Sequence2[lind2],Header2[lind2],SpecName2[lind2],SpecId2[lind2],UniprotId2[lind2])
 
-	al1=Alignment(N1,length(ind1),q1,0,Z1[ind1,:],Sequence1[ind1],Header1[ind1],SpecName1[ind1],SpecId1[ind1],UniprotId1[ind1])
-	al2=Alignment(N2,length(ind2),q2,0,Z2[ind2,:],Sequence2[ind2],Header2[ind2],SpecName2[ind2],SpecId2[ind2],UniprotId2[ind2])
-	return al1,al2
+    return al1,al2  
+    
 end
 
 
