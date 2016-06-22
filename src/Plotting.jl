@@ -173,4 +173,20 @@ function TrimCovMatch(nameX1,nameX2,namematch,prop,nameoutput)
 
 end
 
+#Function to return the Feinauer score of an alignment
+
+
+function ComputeScore(score,split)
+	counter=0
+	mean=0
+	l=size(score)[1]
+	for i in 1:l
+		if (score[i,1]<=split)&&(score[i,2]>split)
+			counter+=1
+			mean+=score[i,3]
+		end
+		counter==4?break:nothing
+	end
+	return mean/4
+end
 
