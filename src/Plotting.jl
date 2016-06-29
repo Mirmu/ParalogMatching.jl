@@ -190,3 +190,27 @@ function ComputeScore(score,split)
 	return mean/4
 end
 
+#For computing quickly the number of effective sequences in the Fasta
+
+function myReadFasta(filename::AbstractString)
+    theta=:auto
+    max_gap_fraction=0.9
+    remove_dups=true
+
+    Z = GaussDCA.read_fasta_alignment(filename, max_gap_fraction)
+    if remove_dups
+        Z, _ = GaussDCA.remove_duplicate_seqs(Z)
+    end
+
+
+    N, M = size(Z)
+    q = round(Int,maximum(Z))
+    
+    q > 32 && error("parameter q=$q is too big (max 31 is allowed)")
+    W , Meff = GaussDCA.compute_weights(Z,q,theta)
+    scale!(W, 1.0/Meff)
+    Zint=round(Int,Z)
+    return N,Meff
+end
+
+
