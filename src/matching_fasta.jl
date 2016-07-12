@@ -38,9 +38,6 @@ function initialize(Xi1, Xi2, cut)
     # Computes the freq matrix for the given matched species "single"
     unitFC!(X1, X2, match, single, freq)
 
-    # Computes the corr matrix from the freq matrix
-    full_COD!(corr, freq)
-
     # Finally compute the inverse of the corr matrix
     invC = inverse_with_pseudo!(corr, freq, 0.8)
 
@@ -132,7 +129,6 @@ function run_matching(a, batch, strat::AbstractString)
 	    println("Recomputing the model")
 	    # Updates the freq and corr matrices, and its inverse
 	    unitFC!(X1, X2, match, el, freq)
-	    full_COD!(corr, freq)
 	    invC = inverse_with_pseudo!(corr, freq, 0.8)
 	end
 

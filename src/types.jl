@@ -22,7 +22,7 @@ type FreqC
     M::Vector{Int}
     matching::Vector{Int}
     q::Int
-end 
+end
 
 # MatchOut is a type containing the matching as an output of the Gurobi optimization module
 # N1 is the number of seqs for alignment 1

@@ -169,20 +169,29 @@ end
 
 # Computes the correlation matrix knowing the frequency matrix
 function full_COD!(prev::FastC, freq::FreqC)
-
     @extract freq : Pij Pi specs M
     @extract prev : Cij
 
     m = M[1] + M[2]
 
-    if m == 0
-        nothing
-    else
-        Cij[:] = 1.0 / m * Pij[:] - 1.0 / m^2 * (Pi * Pi')[:]
-        prev.M[1] = M[1]
-        prev.M[2] = M[2]
-        prev.specs = copy(specs)
+    m == 0 && return nothing
+
+    #Cij[:] = 1.0 / m * Pij[:] - 1.0 / m^2 * (Pi * Pi')[:]
+    N = length(Pi)
+    copy!(Cij, Pij)
+    scale!(Cij, 1/m)
+    @inbounds for j = 1:N
+        Pj = Pi[j]
+        @simd for i = 1:N
+            Cij[i, j] -= (Pi[i] * Pj) / m^2
+        end
     end
+
+    prev.M[1] = M[1]
+    prev.M[2] = M[2]
+    resize!(prev.specs, length(specs))
+    copy!(prev.specs, specs)
+
     return nothing
 end
 
