@@ -1,6 +1,6 @@
 ###########################OPTIMIZATION AND MATCHING BLOCK####################################
 
-function mpbmatch{T<:AbstractFloat}(D::DenseMatrix{T})
+function mpbmatch{T<:AbstractFloat}(D::DenseMatrix{T}, solver::MathProgBase.AbstractMathProgSolver)
     N1, N2 = size(D)
 
     A = matching_matrix(N1, N2)
@@ -10,9 +10,6 @@ function mpbmatch{T<:AbstractFloat}(D::DenseMatrix{T})
 
     f = vec(D)
 
-    solver = GurobiSolver(OutputFlag=false)
-    #solver = CbcSolver()
-    #solver = ClpSolver()
     #sol = mixintprog(f, A, dirs, 1, :Int, 0, 1, solver)
     sol = linprog(f, A, dirs, 1.0, 0.0, 1.0, solver)
     sol.status == :Optimal || error("failed: status = $(sol.status)")
@@ -48,49 +45,6 @@ function matching_matrix(N1::Int, N2::Int)
     end
 
     return sparse(I, J, V, N1 + N2, N1 * N2)
-end
-# First the Gurobi module that solves the linear matching problem
-function gurobimatch{T<:AbstractFloat}(D::DenseMatrix{T})
-    env = Gurobi.Env()
-    setparam!(env, "OutputFlag", false) # set verbose to 0
-    N1, N2 = size(D)
-    mylb = zeros(T, N1 * N2)
-    myub = ones(T, N1 * N2)
-    model = gurobi_model(env; sense = :minimize, lb = mylb, ub = myub, f = D[:])
-    constr1 = zeros(Int, N1)
-    myones1 = ones(Int, N1)
-    constr2 = zeros(Int, N2)
-    myones2 = ones(T, N2)
-
-    dir1 = N2 ≤ N1 ? '=' : '<'
-    dir2 = N1 ≤ N2 ? '=' : '<'
-
-    for i = 1:N1
-        for j = 1:N2
-            constr2[j] = sub2ind((N1, N2), i, j)
-        end
-        add_constr!(model, constr2, myones2, dir2, one(T))
-    end
-    for j = 1:N2
-        for i = 1:N1
-            constr1[i] = sub2ind((N1, N2), i, j)
-        end
-        add_constr!(model, constr1, myones1, dir1, one(T))
-    end
-
-    update_model!(model)
-
-
-    mytime = @elapsed optimize(model)
-    #println("elapsed time = $mytime")
-    status = Gurobi.get_status(model)
-
-    return MatchOut(N1,
-                    N2,
-                    get_objval(model),
-                    reshape(get_solution(model), (N1, N2)),
-                    D,
-                    status)
 end
 
 ######################HELPERS FOR THE MATCHING PROBLEM#################################
@@ -251,6 +205,11 @@ function give_correction(X1, X2, freq::FreqC, invertC::Matrix{Float64}, spec::In
     @extract X2 : Spec2=SpecId Z2=Z N2=N
     @extract freq : M Pi
 
+    #solver = GurobiSolver(OutputFlag=false)
+    #solver = ClpSolver()
+    #solver = GLPKSolverLP()
+    solver = MathProgBase.defaultLPsolver # TODO: allow choosing the solver
+
     # First covariation strategy
     if strat == "covariation"
         ind1 = find(Spec1 .== spec)
@@ -269,7 +228,7 @@ function give_correction(X1, X2, freq::FreqC, invertC::Matrix{Float64}, spec::In
 
         # the cost function as Gurobi wants it
         cost = (Zb1-vmean1) * invertC[1:20*N1,20*N1+1:end] * (Zb2-vmean2)'
-        rematch = gurobimatch(cost)
+        rematch = mpbmatch(cost, solver)
 
         # and finally the results is converted to a matching
         permres = convert_perm_mat(rematch.sol)
@@ -278,7 +237,7 @@ function give_correction(X1, X2, freq::FreqC, invertC::Matrix{Float64}, spec::In
     elseif strat == "genetic"
         # computes the genetic distance between sequences and returns the matching
         cost = cost_from_annot(X1, X2, spec)
-        rematch = gurobimatch(cost)
+        rematch = mpbmatch(cost, solver)
 
         permres = filter_gen_dist(convert_perm_mat(rematch.sol), cost)
 

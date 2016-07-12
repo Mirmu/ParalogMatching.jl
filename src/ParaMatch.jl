@@ -2,7 +2,7 @@ module ParaMatch
 
 using FastaIO, MacroUtils, Iterators, Compat
 using Distributions
-using Gurobi
+using MathProgBase
 
 export readdata, initialize, run_matching
 

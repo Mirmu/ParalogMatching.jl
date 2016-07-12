@@ -1,4 +1,4 @@
-include("ParaMatch.jl")
+include("src/ParaMatch.jl")
 
 X1 = ParaMatch.readdata("test_set/SKshortExact.fasta")
 X2 = ParaMatch.readdata("test_set/RRshortExact.fasta")
