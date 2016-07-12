@@ -294,14 +294,21 @@ end
 
 
 # Inverts the matrix of correlation after adding a pseudo count
-function inverse_with_pseudo!(prev::FastC, freq::FreqC, pc::Float64)
-    @extract freq : M Pij Pi
-    Mfake = round(Int, ((M[1]+M[2])*pc - M[2]) / (1-pc))
+let Cdict = Dict{Int,Matrix{Float64}}()
+    global inverse_with_pseudo!
+    function inverse_with_pseudo!(prev::FastC, freq::FreqC, pc::Float64)
+        @extract freq : M Pi
+        Mfake = round(Int, ((M[1]+M[2])*pc - M[2]) / (1-pc))
 
-    add_pseudocount!(freq, Mfake)
-    full_COD!(prev, freq)
-    inter = inv(cholfact(prev.Cij))
-    return inter
+        L = length(Pi)
+        CC = Base.@get!(Cdict, L, Array{Float64}(L, L))
+
+        add_pseudocount!(freq, Mfake)
+        full_COD!(prev, freq)
+        copy!(CC, prev.Cij)
+        inter = Base.LinAlg.inv!(cholfact!(CC))
+        return inter
+    end
 end
 
 
