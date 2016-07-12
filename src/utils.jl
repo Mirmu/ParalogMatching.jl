@@ -235,7 +235,7 @@ function give_correction(X1, X2, freq::FreqC, invertC::Matrix{Float64}, spec::In
         vmean1 = repmat(1.0 / m * Pi', length(ind1))[:,1:20*N1]
         vmean2 = repmat(1.0 / m * Pi', length(ind2))[:,20*N1+1:end]
 
-        # the cost function as Gurobi wants it
+        # the cost function as the matching algorithm wants it
         cost = (Zb1-vmean1) * invertC[1:20*N1,20*N1+1:end] * (Zb2-vmean2)'
         rematch = mpbmatch(cost, solver)
 
@@ -307,34 +307,40 @@ end
 
 # Adds a pseudo count with Mfake sequences
 function add_pseudocount!(freq::FreqC, Mfake::Int64)
-    Mfake != 0 || return nothing
+    Mfake != 0 || return
 
     @extract freq : Pi Pij M specs q
 
     s = q - 1
-    N = round(Int, length(Pi) / s)
-    m = M[1] + M[2]
+    L = length(Pi)
+    @assert L % s == 0
+    N = L ÷ s
 
-    pc = Mfake / (Mfake + m)
-    pcq = pc / q
+    pcq = Mfake / q
+    pcqq = pcq / q
 
-    Pij_c = 1 / (m + Mfake) * Pij .+ pcq / q
-    Pi_c = 1 / (m + Mfake) * Pi .+ pcq
+    @inbounds for j = 1:L, i = 1:L
+        Pij[i, j] += pcqq
+    end
+    @inbounds for i = 1:L
+        Pi[i] += pcq
+    end
 
     i0 = 0
-    for i = 1:N
+    @inbounds for i = 1:N
         xr = i0 + (1:s)
-        Pij_c[xr, xr] = 1 / (m + Mfake) * Pij[xr, xr]
-        for alpha = 1:s
-            x = i0 + alpha
-            Pij_c[x, x] += pcq
+        for x2 in xr, x1 in xr
+            Pij[x1, x2] -= pcqq
         end
         i0 += s
     end
+    @inbounds for i = 1:L
+        Pij[i, i] += pcq
+    end
 
-    Pi[:] = (Mfake + m) * Pi_c[:]
-    Pij[:] = (Mfake + m) * Pij_c[:]
-    M[:] = [M[1], M[2] + Mfake][:]
+    M[2] += Mfake
+
+    return
 end
 
 function annot2num(annotb::AbstractString)
