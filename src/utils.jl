@@ -7,49 +7,49 @@ function gurobimatch{T<:AbstractFloat}(D::DenseMatrix{T})
     N1, N2 = size(D)
     mylb = zeros(T, N1 * N2)
     myub = ones(T, N1 * N2)
-    model = gurobi_model(env; sense = :minimize, lb = mylb, ub = myub, f = D[:])    
+    model = gurobi_model(env; sense = :minimize, lb = mylb, ub = myub, f = D[:])
     constr1 = zeros(Int, N1)
-    myones1 = ones(Int, N1)        
+    myones1 = ones(Int, N1)
     constr2 = zeros(Int, N2)
-    myones2 = ones(T, N2)    
-    if N1 < N2    
+    myones2 = ones(T, N2)
+    if N1 < N2
         for i = 1:N1
             for j = 1:N2
                 constr2[j] = sub2ind((N1, N2), i, j)
             end
-            add_constr!(model, constr2, myones2, '=', one(T)) 
+            add_constr!(model, constr2, myones2, '=', one(T))
         end
         for j = 1:N2
             for i = 1:N1
                 constr1[i] = sub2ind((N1, N2), i, j)
             end
-            add_constr!(model, constr1, myones1, '<', one(T)) 
+            add_constr!(model, constr1, myones1, '<', one(T))
         end
     elseif N1 > N2
         for j = 1:N2
             for i = 1:N1
                 constr1[i] = sub2ind((N1, N2), i, j)
             end
-            add_constr!(model, constr1, myones1, '=', one(T)) 
+            add_constr!(model, constr1, myones1, '=', one(T))
         end
         for i = 1:N1
             for j = 1:N2
                 constr2[j] = sub2ind((N1, N2), i, j)
             end
-            add_constr!(model, constr2, myones2, '<', one(T)) 
+            add_constr!(model, constr2, myones2, '<', one(T))
         end
     else
         for i = 1:N1
             for j = 1:N2
                 constr2[j] = sub2ind((N1, N2), i, j)
             end
-            add_constr!(model, constr2, myones2, '=', one(T)) 
+            add_constr!(model, constr2, myones2, '=', one(T))
         end
         for j = 1:N2
             for i = 1:N1
                 constr1[i] = sub2ind((N1, N2), i, j)
             end
-            add_constr!(model, constr1, myones1, '=', one(T)) 
+            add_constr!(model, constr1, myones1, '=', one(T))
         end
     end
 
@@ -61,7 +61,7 @@ function gurobimatch{T<:AbstractFloat}(D::DenseMatrix{T})
     status = Gurobi.get_status(model)
 
     return MatchOut(N1,
-                    N2, 
+                    N2,
                     get_objval(model),
                     reshape(get_solution(model), (N1, N2)),
                     D,
@@ -86,7 +86,7 @@ function unitFC!(X1, X2, match, nspecs, prior)
     @extract prior : Pij Pi M
 
     N = N1 + N2
-    s = q - 1 
+    s = q - 1
     Ns  = N * s
 
     # First removing the species to be recomputed
@@ -104,7 +104,7 @@ function unitFC!(X1, X2, match, nspecs, prior)
 
         ZZ = Vector{Int8}[vec(Zt[i,:]) for i = 1:N]
 
-        # first removing 
+        # first removing
         @inbounds begin
             i0 = 0
             for i = 1:N
@@ -185,7 +185,7 @@ function unitFC!(X1, X2, match, nspecs, prior)
     prior.specs = sort([prior.specs;nspecs])
     M[1] = M[1] + len
     prior.matching[:] = match[:]
-    return nothing  
+    return nothing
 end
 
 # Computes the correlation matrix knowing the frequency matrix
@@ -196,7 +196,7 @@ function full_COD!(prev::FastC, freq::FreqC)
 
     m = M[1] + M[2]
 
-    if m == 0 
+    if m == 0
         nothing
     else
         Cij[:] = 1.0 / m * Pij[:] - 1.0 / m^2 * (Pi * Pi')[:]
@@ -278,7 +278,7 @@ function give_correction(X1, X2, freq::FreqC, invertC::Matrix{Float64}, spec::In
         ind2 = find(Spec2 .== spec)
         mini = min(length(ind1), length(ind2))
         permres = (randperm(length(ind1))[1:mini], randperm(length(ind2))[1:mini])
-    else 
+    else
         error("option not known")
     end
 
@@ -289,7 +289,7 @@ end
 ##################################HELPERS FOR THE MATCHING########################
 
 # Convert the permutation matrix of Gurobi into a matchin array
-# The matching format is 
+# The matching format is
 # ind1:rows of the first alignment
 # ind2:matched rowd of the second alignment
 function convert_perm_mat(mat)

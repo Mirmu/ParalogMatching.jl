@@ -24,7 +24,7 @@ end
 # This routine is a bit inefficient
 function harmonize_fasta(X1, X2)
     @extract X1 : SpecName1=SpecName N1=N q1=q Z1=Z Sequence1=Sequence UniprotId1=UniprotId SpecId1=SpecId Header1=Header
-    @extract X2 : SpecName2=SpecName N2=N q2=q Z2=Z Sequence2=Sequence UniprotId2=UniprotId SpecId2=SpecId Header2=Header    
+    @extract X2 : SpecName2=SpecName N2=N q2=q Z2=Z Sequence2=Sequence UniprotId2=UniprotId SpecId2=SpecId Header2=Header
     _s1 = unique(SpecName1)
     _s2 = unique(SpecName2)
     kept = intersect(_s1, _s2)
@@ -64,7 +64,7 @@ function harmonize_fasta(X1, X2)
     al1 = Alignment(N1, length(lind1), q1, 0, Z1[lind1, :], Sequence1[lind1], Header1[lind1], SpecName1[lind1], SpecId1[lind1], UniprotId1[lind1])
     al2 = Alignment(N2, length(lind2), q2, 0, Z2[lind2, :], Sequence2[lind2], Header2[lind2], SpecName2[lind2], SpecId2[lind2], UniprotId2[lind2])
 
-    return al1, al2  
+    return al1, al2
 end
 
 #####################BLOCK FOR WRITING FASTA FROM ALIGNMENTS OBJECTS########

@@ -20,7 +20,7 @@ function tally(list)
 end
 
 # Returns the indexes of the list that have unique labels
-# WARNING !: works only for sorted lists 
+# WARNING !: works only for sorted lists
 function index_of_unique(list)
     list == sort(list) || error("would you mind sorting the list ?")
     change = list[1]

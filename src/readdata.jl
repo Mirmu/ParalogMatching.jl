@@ -86,7 +86,7 @@ function read_fasta_alignment(filename::ASCIIString, max_gap_fraction::Float64)
 
     Fa = Alignment(size(Z, 1), size(Z, 2), Int(maximum(Z)), 12,  Z', Sequence, Header, SpecName, SpecId, UniprotId)
 
-    return Fa 
+    return Fa
 end
 
 function specname(s::ASCIIString)
@@ -117,12 +117,12 @@ function specname(s::ASCIIString)
                 error("badly formed string")
             end
             flag1 = 1
-        elseif s[i] == '_' 
+        elseif s[i] == '_'
             i2 = i
             if flag2 == 1
                 error("badly formed string")
             end
-            flag2 = 1        
+            flag2 = 1
         end
     end
     i1 < 0 || i2 < 0 && error("badly formed string")
@@ -151,7 +151,7 @@ function compute_spec(Header::Vector{ASCIIString})
     @inbounds for j = 1:M
         nname = length(SpecName[j])
         for i = 1:nspec
-            SpecName[j] == specunique[i] || continue 
+            SpecName[j] == specunique[i] || continue
             SpecId[j] = i
             break
         end

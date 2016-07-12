@@ -38,7 +38,7 @@ function initialize(Xi1, Xi2, cut)
     # Computes the freq matrix for the given matched species "single"
     unitFC!(X1, X2, match, single, freq)
 
-    # Computes the corr matrix from the freq matrix	
+    # Computes the corr matrix from the freq matrix
     full_COD!(corr, freq)
 
     # Finally compute the inverse of the corr matrix
@@ -57,7 +57,7 @@ end
 
 # spec_entropy computes the number of potential matchings for each species
 # And returns the ordered list, from the easiest fams to the hardest
-# WARNING: Works for harmonized Fasta only 
+# WARNING: Works for harmonized Fasta only
 function spec_entropy(X1, X2)
     @extract X1 : SpecId1=SpecId
     @extract X2 : SpecId2=SpecId
@@ -96,7 +96,7 @@ function apply_matching!(X1, X2, match, lspec, lmatch)
 end
 
 # The main function that runs the matching
-# Works for harmonized Fasta 
+# Works for harmonized Fasta
 # options "strat" for the matching are :
 #   "covariation": computes the matching from co evolution signal
 #   "genetic":     computes the matching from genetic proximity (if FASTA contains genetic position info)
