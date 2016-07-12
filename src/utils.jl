@@ -12,45 +12,21 @@ function gurobimatch{T<:AbstractFloat}(D::DenseMatrix{T})
     myones1 = ones(Int, N1)
     constr2 = zeros(Int, N2)
     myones2 = ones(T, N2)
-    if N1 < N2
-        for i = 1:N1
-            for j = 1:N2
-                constr2[j] = sub2ind((N1, N2), i, j)
-            end
-            add_constr!(model, constr2, myones2, '=', one(T))
-        end
+
+    dir1 = N2 ≤ N1 ? '=' : '<'
+    dir2 = N1 ≤ N2 ? '=' : '<'
+
+    for i = 1:N1
         for j = 1:N2
-            for i = 1:N1
-                constr1[i] = sub2ind((N1, N2), i, j)
-            end
-            add_constr!(model, constr1, myones1, '<', one(T))
+            constr2[j] = sub2ind((N1, N2), i, j)
         end
-    elseif N1 > N2
-        for j = 1:N2
-            for i = 1:N1
-                constr1[i] = sub2ind((N1, N2), i, j)
-            end
-            add_constr!(model, constr1, myones1, '=', one(T))
-        end
+        add_constr!(model, constr2, myones2, dir2, one(T))
+    end
+    for j = 1:N2
         for i = 1:N1
-            for j = 1:N2
-                constr2[j] = sub2ind((N1, N2), i, j)
-            end
-            add_constr!(model, constr2, myones2, '<', one(T))
+            constr1[i] = sub2ind((N1, N2), i, j)
         end
-    else
-        for i = 1:N1
-            for j = 1:N2
-                constr2[j] = sub2ind((N1, N2), i, j)
-            end
-            add_constr!(model, constr2, myones2, '=', one(T))
-        end
-        for j = 1:N2
-            for i = 1:N1
-                constr1[i] = sub2ind((N1, N2), i, j)
-            end
-            add_constr!(model, constr1, myones1, '=', one(T))
-        end
+        add_constr!(model, constr1, myones1, dir1, one(T))
     end
 
     update_model!(model)
