@@ -1,5 +1,54 @@
 ###########################OPTIMIZATION AND MATCHING BLOCK####################################
 
+function mpbmatch{T<:AbstractFloat}(D::DenseMatrix{T})
+    N1, N2 = size(D)
+
+    A = matching_matrix(N1, N2)
+    dir1 = N2 ≤ N1 ? '=' : '<'
+    dir2 = N1 ≤ N2 ? '=' : '<'
+    dirs = [k ≤ N2 ? dir1 : dir2 for k = 1:(N1+N2)]
+
+    f = vec(D)
+
+    solver = GurobiSolver(OutputFlag=false)
+    #solver = CbcSolver()
+    #solver = ClpSolver()
+    #sol = mixintprog(f, A, dirs, 1, :Int, 0, 1, solver)
+    sol = linprog(f, A, dirs, 1.0, 0.0, 1.0, solver)
+    sol.status == :Optimal || error("failed: status = $(sol.status)")
+
+    val = sol.objval
+    xsol = reshape(sol.sol, N1, N2)
+
+    return MatchOut(N1,
+                    N2,
+                    val,
+                    xsol,
+                    D,
+                    sol.status)
+end
+
+function matching_matrix(N1::Int, N2::Int)
+    I = Array{Int}(2 * N1 * N2)
+    J = Array{Int}(2 * N1 * N2)
+    V = ones(2 * N1 * N2)
+
+    t = 1
+    for i = 1:N2, j = 1:N1
+        k = (i-1) * N1 + j
+        I[t] = i
+        J[t] = k
+        t += 1
+    end
+    for i = 1:N1, j = 1:N2
+        k = i + (j-1) * N1
+        I[t] = i + N2
+        J[t] = k
+        t += 1
+    end
+
+    return sparse(I, J, V, N1 + N2, N1 * N2)
+end
 # First the Gurobi module that solves the linear matching problem
 function gurobimatch{T<:AbstractFloat}(D::DenseMatrix{T})
     env = Gurobi.Env()
