@@ -14,10 +14,7 @@ function mpbmatch{T<:AbstractFloat}(D::DenseMatrix{T}, solver::MathProgBase.Abst
     sol = linprog(f, A, dirs, 1.0, 0.0, 1.0, solver)
     sol.status == :Optimal || error("failed: status = $(sol.status)")
 
-    val = sol.objval
-    xsol = reshape(sol.sol, N1, N2)
-
-    return MatchOut(N1, N2, val, xsol, D, sol.status)
+    return reshape(sol.sol, N1, N2)
 end
 
 function matching_matrix(N1::Int, N2::Int)
@@ -242,7 +239,7 @@ function give_correction(X1, X2, freq::FreqC, invertC::Matrix{Float64}, spec::In
             # Compute the matching via linear programming
             rematch = mpbmatch(cost, solver)
             # and finally the result is converted to a matching
-            permres = convert_perm_mat(rematch.sol)
+            permres = convert_perm_mat(rematch)
         elseif strat == "greedy"
             # Compute the matching using a greedy heuristic
             permres = greedy_from_cost(cost)
@@ -256,7 +253,7 @@ function give_correction(X1, X2, freq::FreqC, invertC::Matrix{Float64}, spec::In
         cost = cost_from_annot(X1, X2, spec)
         rematch = mpbmatch(cost, solver)
 
-        permres = filter_gen_dist(convert_perm_mat(rematch.sol), cost)
+        permres = filter_gen_dist(convert_perm_mat(rematch), cost)
 
     # Random matching to test null hypothesis
     elseif strat == "random"

@@ -29,8 +29,8 @@ function initialize(Xi1, Xi2, cut)
     match = start_matching(X1, X2)
 
     # Computing the prior correlation matrix and interaction matrix
-    freq = nullF(X1, X2)
-    corr = nullC(freq)
+    freq = FreqC(X1, X2)
+    corr = FastC(freq)
 
     # First compute corr from single matched families
     single = X1.SpecId[find(match)]
