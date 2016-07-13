@@ -135,5 +135,6 @@ function run_matching(a, batch, strat::AbstractString)
 	# Takes a snapshot of the matching being built
 	push!(savematch, (deepcopy(match), deepcopy(freq.specs)))
     end
+    clear_inverse_mem()
     return X1, X2, match, freq, corr, invC, savematch
 end

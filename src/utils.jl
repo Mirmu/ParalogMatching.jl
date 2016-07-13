@@ -17,12 +17,7 @@ function mpbmatch{T<:AbstractFloat}(D::DenseMatrix{T}, solver::MathProgBase.Abst
     val = sol.objval
     xsol = reshape(sol.sol, N1, N2)
 
-    return MatchOut(N1,
-                    N2,
-                    val,
-                    xsol,
-                    D,
-                    sol.status)
+    return MatchOut(N1, N2, val, xsol, D, sol.status)
 end
 
 function matching_matrix(N1::Int, N2::Int)
@@ -60,7 +55,7 @@ end
 # nspecs corresponds to the specs added at this step, defined by their SpecId
 # You have to pass the prior because it is in-place
 function unitFC!(X1, X2, match, nspecs, prior)
-    @extract X1 : N1=N Z1=Z q N1=N
+    @extract X1 : N1=N Z1=Z N1=N q
     @extract X2 : N2=N Z2=Z N2=N
     @extract prior : Pij Pi M
 
@@ -210,37 +205,50 @@ end
 # This function takes alignments, priors matrices and ONE spec, and computes the matching following various strategies
 # The helpers for the strategies are below
 function give_correction(X1, X2, freq::FreqC, invertC::Matrix{Float64}, spec::Int, strat::AbstractString)
-    @extract X1 : Spec1=SpecId Z1=Z N1=N
+    @extract X1 : Spec1=SpecId Z1=Z N1=N s=q-1
     @extract X2 : Spec2=SpecId Z2=Z N2=N
     @extract freq : M Pi
+
+    r1 = 1:(s*N1)
+    r2 = (s*N1+1):(s*(N1+N2))
 
     #solver = GurobiSolver(OutputFlag=false)
     #solver = ClpSolver()
     #solver = GLPKSolverLP()
     solver = MathProgBase.defaultLPsolver # TODO: allow choosing the solver
+    #solver = MathProgBase.defaultMIPsolver # TODO: allow choosing the solver
 
-    # First covariation strategy
-    if strat == "covariation"
+    # First covariation/greedy strategy
+    if strat ∈ ("covariation", "greedy")
         ind1 = find(Spec1 .== spec)
         ind2 = find(Spec2 .== spec)
 
         # takes the sequences of the "spec"
-        Zb1 = expand_binary(Z1[ind1,:], 20)
-        Zb2 = expand_binary(Z2[ind2,:], 20)
+        Zb1 = expand_binary(Z1[ind1,:], s)
+        Zb2 = expand_binary(Z2[ind2,:], s)
 
         m = M[1] + M[2]
 
         # extracts the mean of the prior (one could add the additional contribution brought by the "spec")
         # but it does not change the results and we consider non bijective case here
-        vmean1 = repmat(1.0 / m * Pi', length(ind1))[:,1:20*N1]
-        vmean2 = repmat(1.0 / m * Pi', length(ind2))[:,20*N1+1:end]
+        vmean = repmat(Pi' / m, length(ind1))
+        vmean1 = vmean[:,r1]
+        vmean2 = vmean[:,r2]
 
         # the cost function as the matching algorithm wants it
-        cost = (Zb1-vmean1) * invertC[1:20*N1,20*N1+1:end] * (Zb2-vmean2)'
-        rematch = mpbmatch(cost, solver)
+        cost = (Zb1-vmean1) * invertC[r1,r2] * (Zb2-vmean2)'
 
-        # and finally the results is converted to a matching
-        permres = convert_perm_mat(rematch.sol)
+        if strat == "covariation"
+            # Compute the matching via linear programming
+            rematch = mpbmatch(cost, solver)
+            # and finally the result is converted to a matching
+            permres = convert_perm_mat(rematch.sol)
+        elseif strat == "greedy"
+            # Compute the matching using a greedy heuristic
+            permres = greedy_from_cost(cost)
+        else
+            error("bug")
+        end
 
     # Genetic matching strategy by genetic distance
     elseif strat == "genetic"
@@ -249,21 +257,6 @@ function give_correction(X1, X2, freq::FreqC, invertC::Matrix{Float64}, spec::In
         rematch = mpbmatch(cost, solver)
 
         permres = filter_gen_dist(convert_perm_mat(rematch.sol), cost)
-
-    # Greedy does like covariation, but the returned matching follows a greedy heuristic
-    # Works well also in general
-    elseif strat == "greedy"
-        ind1 = find(Spec1 .== spec)
-        ind2 = find(Spec2 .== spec)
-        Zb1 = expand_binary(Z1[ind1,:], 20)
-        Zb2 = expand_binary(Z2[ind2,:], 20)
-
-        m = M[1] + M[2]
-        vmean1 = repmat(1.0 / m * Pi', length(ind1))[:,1:20*N1]
-        vmean2 = repmat(1.0 / m * Pi', length(ind2))[:,20*N1+1:end]
-
-        cost = (Zb1-vmean1) * invertC[1:20*N1,20*N1+1:end] * (Zb2-vmean2)'
-        permres = greedy_from_cost(cost)
 
     # Random matching to test null hypothesis
     elseif strat == "random"
@@ -295,7 +288,7 @@ end
 
 # Inverts the matrix of correlation after adding a pseudo count
 let Cdict = Dict{Int,Matrix{Float64}}()
-    global inverse_with_pseudo!
+    global inverse_with_pseudo!, clear_inverse_mem
     function inverse_with_pseudo!(prev::FastC, freq::FreqC, pc::Float64)
         @extract freq : M Pi
         Mfake = round(Int, ((M[1]+M[2])*pc - M[2]) / (1-pc))
@@ -309,6 +302,7 @@ let Cdict = Dict{Int,Matrix{Float64}}()
         inter = Base.LinAlg.inv!(cholfact!(CC))
         return inter
     end
+    clear_inverse_mem() = empty!(Cdict)
 end
 
 
