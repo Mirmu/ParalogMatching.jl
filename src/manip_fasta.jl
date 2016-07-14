@@ -21,53 +21,41 @@ end
 # Harmonizing consists of creating the following structure for a FASTA:
 # Filter the species in common between both FASTA and remove the others, that cannot be matched
 # Giving those species a common labeling
-# This routine is a bit inefficient
-function harmonize_fasta(X1, X2)
+function harmonize_fasta(X1::Alignment, X2::Alignment)
     @extract X1 : spec_name1=spec_name N1=N q1=q Z1=Z sequence1=sequence uniprot_id1=uniprot_id spec_id1=spec_id header1=header
     @extract X2 : spec_name2=spec_name N2=N q2=q Z2=Z sequence2=sequence uniprot_id2=uniprot_id spec_id2=spec_id header2=header
-    _s1 = unique(spec_name1)
-    _s2 = unique(spec_name2)
-    kept = intersect(_s1, _s2)
+    us1 = unique(spec_name1)
+    us2 = unique(spec_name2)
+    kept = intersect(us1, us2)
 
-    ind1 = Vector{Vector{Int}}(length(kept))
-    ctr = 0
-    for fam in kept
-	ctr += 1
-	ind1[ctr] = find(x->x==fam, spec_name1)
-    end
+    kd = [s=>i for (i,s) in enumerate(kept)]
 
-    ind2 = Vector{Vector{Int}}(length(kept))
-    ctr = 0
-    for fam in kept
-	ctr += 1
-	ind2[ctr] = find(x->x==fam, spec_name2)
-    end
+    ind1, sid1 = compute_ind(spec_name1, kd)
+    ind2, sid2 = compute_ind(spec_name2, kd)
 
-    lind1 = Int[]
-    for i in eachindex(ind1)
-	val = findfirst(kept, spec_name1[ind1[i][1]])
-	for j in ind1[i]
-	    spec_id1[j] = val
-	    push!(lind1, j)
-	end
-    end
-
-    lind2 = Int[]
-    for i in eachindex(ind2)
-	val = findfirst(kept, spec_name2[ind2[i][1]])
-	for j in ind2[i]
-	    spec_id2[j] = val
-	    push!(lind2, j)
-	end
-    end
-
-    al1 = Alignment(N1, length(lind1), q1, 0, Z1[lind1, :], sequence1[lind1], header1[lind1],
-		    spec_name1[lind1], spec_id1[lind1], uniprot_id1[lind1])
-    al2 = Alignment(N2, length(lind2), q2, 0, Z2[lind2, :], sequence2[lind2], header2[lind2],
-		    spec_name2[lind2], spec_id2[lind2], uniprot_id2[lind2])
+    al1 = Alignment(N1, length(ind1), q1, 0, Z1[ind1, :], sequence1[ind1], header1[ind1],
+		    spec_name1[ind1], sid1, uniprot_id1[ind1])
+    al2 = Alignment(N2, length(ind2), q2, 0, Z2[ind2, :], sequence2[ind2], header2[ind2],
+		    spec_name2[ind2], sid2, uniprot_id2[ind2])
 
     return al1, al2
 end
+
+# auxiliary function for harmonize_fasta
+function compute_ind(spec_name::Vector{ASCIIString}, kd::Dict{ASCIIString,Int})
+    ind = Int[]
+    sid = Int[]
+    for (i,f) in enumerate(spec_name)
+	ctr = get(kd, f, 0)
+	ctr == 0 && continue
+	push!(sid, ctr)
+	push!(ind, i)
+    end
+    p = sortperm(sid)
+
+    return ind[p], sid[p]
+end
+
 
 #################### BLOCK FOR WRITING FASTA FROM ALIGNMENTS OBJECTS #######
 

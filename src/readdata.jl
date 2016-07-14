@@ -13,6 +13,8 @@ immutable Alignment <: DataSet
     uniprot_id::Vector{ASCIIString}
 end
 
+Base.(:(==))(X1::Alignment, X2::Alignment) = all(fn->getfield(X1, fn) == getfield(X2, fn), fieldnames(Alignment))
+
 function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float64 = 1.0)
     f = FastaReader(filename)
 
