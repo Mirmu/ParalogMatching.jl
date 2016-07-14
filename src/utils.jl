@@ -14,7 +14,7 @@ function mpbmatch{T<:AbstractFloat}(D::DenseMatrix{T}, solver::MathProgBase.Abst
     sol = linprog(f, A, dirs, 1.0, 0.0, 1.0, solver)
     sol.status == :Optimal || error("failed: status = $(sol.status)")
 
-    return reshape(sol.sol, N1, N2)
+    return reshape(sol.sol, N1, N2)::Matrix{Float64}
 end
 
 function matching_matrix(N1::Int, N2::Int)
