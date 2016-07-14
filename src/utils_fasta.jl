@@ -21,22 +21,23 @@ end
 # Returns the indexes of the list that have unique labels
 # WARNING!: works only for sorted lists
 function index_of_unique(list)
-    @assert issorted(list)
-    change = list[1]
     ind = Int64[]
+    L = length(list)
+    L == 0 && return ind
 
-    if list[1] != list[2]
-	push!(ind, 1)
-    end
-
-    for i in 2:length(list)-1
-	if list[i] != list[i-1] && list[i] != list[i+1]
-	    push!(ind, i)
+    chgd = true
+    prev = list[1]
+    for i = 2:L
+	curr = list[i]
+	curr ≥ prev || error("list is not sorted")
+	if curr ≠ prev
+	    chgd && push!(ind, i-1)
+	    chgd = true
+	else
+	    chgd = false
 	end
+	prev = curr
     end
-
-    if list[end] != list[end-1]
-	push!(ind, length(list))
-    end
+    chgd && push!(ind, L)
     return ind
 end
