@@ -4,7 +4,7 @@ using FastaIO, MacroUtils, Iterators, Compat
 using Distributions
 using MathProgBase
 
-export readdata, initialize, run_matching
+export read_fasta_alignment, initialize, run_matching
 
 # Including the reader for the FASTA
 include("readdata.jl")

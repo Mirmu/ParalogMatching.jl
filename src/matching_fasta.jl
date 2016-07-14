@@ -3,19 +3,19 @@
 # Returns the initial matching between single species
 # Works only for Harmonized FASTA
 function start_matching(X1, X2)
-    @extract X1 : SpecId1=SpecId
-    @extract X2 : SpecId2=SpecId
-    match = zeros(SpecId1)
+    @extract X1 : spec_id1=spec_id
+    @extract X2 : spec_id2=spec_id
+    match = zeros(spec_id1)
+
     #finds the indices of the species with one single sequence
+    ind1 = index_of_unique(spec_id1)
+    ind2 = index_of_unique(spec_id2)
 
-    ind1 = index_of_unique(SpecId1)
-    ind2 = index_of_unique(SpecId2)
-
-    candi = intersect(SpecId1[ind1], SpecId2[ind2])
+    candi = intersect(spec_id1[ind1], spec_id2[ind2])
 
     for el in candi
-	a1 = findfirst(SpecId1, el)
-	a2 = findfirst(SpecId2, el)
+	a1 = findfirst(spec_id1, el)
+	a2 = findfirst(spec_id2, el)
 	match[a1] = a2
     end
     return match
@@ -33,7 +33,7 @@ function initialize(Xi1, Xi2, cut)
     corr = FastC(freq)
 
     # First compute corr from single matched families
-    single = X1.SpecId[find(match)]
+    single = X1.spec_id[find(match)]
 
     # Computes the freq matrix for the given matched species "single"
     unitFC!(X1, X2, match, single, freq)
@@ -56,10 +56,10 @@ end
 # And returns the ordered list, from the easiest fams to the hardest
 # WARNING: Works for harmonized Fasta only
 function spec_entropy(X1, X2)
-    @extract X1 : SpecId1=SpecId
-    @extract X2 : SpecId2=SpecId
-    bib1 = tally(SpecId1)
-    bib2 = tally(SpecId2)
+    @extract X1 : spec_id1=spec_id
+    @extract X2 : spec_id2=spec_id
+    bib1 = tally(spec_id1)
+    bib2 = tally(spec_id2)
 
     entropy = Tuple{Int64,Float64}[]
 
@@ -80,13 +80,13 @@ end
 # First a helper...
 # given a list of specs with their respective matching within species, it updates the global match vector
 function apply_matching!(X1, X2, match, lspec, lmatch)
-    @extract X1 : SpecId1=SpecId
-    @extract X2 : SpecId2=SpecId
+    @extract X1 : spec_id1=spec_id
+    @extract X2 : spec_id2=spec_id
     length(lspec) == length(lmatch) || error("data non compatible")
 
     for (i,el) in enumerate(lspec)
-	ind1 = find(SpecId1 .== el)
-	ind2 = find(SpecId2 .== el)
+	ind1 = find(spec_id1 .== el)
+	ind2 = find(spec_id2 .== el)
 	match[ind1[lmatch[i][1]]] = ind2[lmatch[i][2]]
     end
     return nothing

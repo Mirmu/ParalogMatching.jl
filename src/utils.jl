@@ -43,13 +43,13 @@ end
 
 # Gets both the lines of alignments matched for a given list of specs
 function get_edges(X1, X2, match, specs::Vector{Int64})
-    ind = find([a in specs for a in X1.SpecId])
+    ind = find([a in specs for a in X1.spec_id])
     filter!(x->match[x]!=0, ind)
     return ind, match[ind]
 end
 
 # Function that computes the frequency count, for a given matching.
-# nspecs corresponds to the specs added at this step, defined by their SpecId
+# nspecs corresponds to the specs added at this step, defined by their spec_id
 # You have to pass the prior because it is in-place
 function unitFC!(X1, X2, match, nspecs, prior)
     @extract X1 : N1=N Z1=Z N1=N q
@@ -202,8 +202,8 @@ end
 # This function takes alignments, priors matrices and ONE spec, and computes the matching following various strategies
 # The helpers for the strategies are below
 function give_correction(X1, X2, freq::FreqC, invertC::Matrix{Float64}, spec::Int, strat::AbstractString)
-    @extract X1 : Spec1=SpecId Z1=Z N1=N s=q-1
-    @extract X2 : Spec2=SpecId Z2=Z N2=N
+    @extract X1 : spec1=spec_id Z1=Z N1=N s=q-1
+    @extract X2 : spec2=spec_id Z2=Z N2=N
     @extract freq : M Pi
 
     r1 = 1:(s*N1)
@@ -217,8 +217,8 @@ function give_correction(X1, X2, freq::FreqC, invertC::Matrix{Float64}, spec::In
 
     # First covariation/greedy strategy
     if strat ∈ ("covariation", "greedy")
-        ind1 = find(Spec1 .== spec)
-        ind2 = find(Spec2 .== spec)
+        ind1 = find(spec1 .== spec)
+        ind2 = find(spec2 .== spec)
 
         # takes the sequences of the "spec"
         Zb1 = expand_binary(Z1[ind1,:], s)
@@ -257,8 +257,8 @@ function give_correction(X1, X2, freq::FreqC, invertC::Matrix{Float64}, spec::In
 
     # Random matching to test null hypothesis
     elseif strat == "random"
-        ind1 = find(Spec1 .== spec)
-        ind2 = find(Spec2 .== spec)
+        ind1 = find(spec1 .== spec)
+        ind2 = find(spec2 .== spec)
         mini = min(length(ind1), length(ind2))
         permres = (randperm(length(ind1))[1:mini], randperm(length(ind2))[1:mini])
     else
@@ -354,12 +354,12 @@ function annot2num(annotb::AbstractString)
 end
 
 function cost_from_annot(X1, X2, spec)
-    @extract X1 : Spec1=SpecId Z1=Z N1=N
-    @extract X2 : Spec2=SpecId Z2=Z N2=N
+    @extract X1 : spec1=spec_id Z1=Z N1=N
+    @extract X2 : spec2=spec_id Z2=Z N2=N
 
-    ind1 = find(Spec1 .== spec)
-    ind2 = find(Spec2 .== spec)
-    cost = Float64[abs(annot2num(X1.UniprotId[i]) - annot2num(X2.UniprotId[j])) for i in ind1, j in ind2]
+    ind1 = find(spec1 .== spec)
+    ind2 = find(spec2 .== spec)
+    cost = Float64[abs(annot2num(X1.uniprot_id[i]) - annot2num(X2.uniprot_id[j])) for i in ind1, j in ind2]
     return cost
 end
 

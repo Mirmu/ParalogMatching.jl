@@ -64,7 +64,7 @@ function post_order_scores(X1, X2, match)
 
     freq = nullF(X1, X2)
     corr = nullC(freq)
-    single = X1.SpecId[find(match)]
+    single = X1.spec_id[find(match)]
     unitFC!(X1, X2, match, single, freq)
     full_COD!(corr, freq)
     invC = inverse_with_pseudo!(corr, freq, 0.8)
@@ -103,7 +103,7 @@ function full_edges_scores(X1, X2, match)
 
     freq = nullF(X1, X2)
     corr = nullC(freq)
-    single = X1.SpecId[find(match)]
+    single = X1.spec_id[find(match)]
     unitFC!(X1, X2, match, single, freq)
     full_COD!(corr, freq)
     invC = inverse_with_pseudo!(corr, freq, 0.8)
@@ -118,7 +118,7 @@ function full_edges_scores(X1, X2, match)
     suborder = Tuple{Tuple{Float64,Float64},Float64}[]
 
     # Creates all the possibles within species match
-    pairings = [find(x->x==i, X2.SpecId) for i in X1.SpecId]
+    pairings = [find(x->x==i, X2.spec_id) for i in X1.spec_id]
     len1 = 20 * X1.N
     len2 = 20 * X2.N
     nullconst = 1/2 * (logdet(corr.Cij) - logdet(corr.Cij[1:len1,1:len1]) - logdet(corr.Cij[len1+1:end,len1+1:end]))
@@ -132,16 +132,16 @@ function full_edges_scores(X1, X2, match)
 	    seq = [seq1;seq2]
 	    score = -(((seq-aver)[1:len1]') * invC[1:len1,len1+1:end] * ((seq-aver)[len1+1:end]))[1] - nullconst
 	    println(((i, j), score))
-	    if (X1.SpecId[i] == flag)
+	    if (X1.spec_id[i] == flag)
 		push!(suborder, ((i, j), score))
 	    end
 
-	    if (X1.SpecId[i] != flag) || (i == lines)
+	    if (X1.spec_id[i] != flag) || (i == lines)
 		sort!(suborder, by=x->x[2], rev=true)
 		push!(ordering, suborder)
 		suborder = Tuple{Tuple{Float64,Float64},Float64}[]
 		push!(suborder, ((i, j), score))
-		flag = X1.SpecId[i]
+		flag = X1.spec_id[i]
 	    end
 	end
     end

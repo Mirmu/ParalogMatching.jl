@@ -6,21 +6,15 @@ immutable Alignment <: DataSet
     q::Int
     split::Int
     Z::Matrix{Int8}
-    Sequence::Vector{ASCIIString}
-    Header::Vector{ASCIIString}
-    SpecName::Vector{ASCIIString}
-    SpecId::Vector{Int}
-    UniprotId::Vector{ASCIIString}
+    sequence::Vector{ASCIIString}
+    header::Vector{ASCIIString}
+    spec_name::Vector{ASCIIString}
+    spec_id::Vector{Int}
+    uniprot_id::Vector{ASCIIString}
 end
 
-readdata(filename::ASCIIString) = read_fasta_alignment(filename::ASCIIString)
-
-read_fasta_alignment(filename::ASCIIString) = read_fasta_alignment(filename::ASCIIString, 1.)
-
-function read_fasta_alignment(filename::ASCIIString, max_gap_fraction::Float64)
+function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float64 = 1.0)
     f = FastaReader(filename)
-
-    max_gap_fraction = Float64(max_gap_fraction)
 
     # pass 1
 
@@ -63,13 +57,13 @@ function read_fasta_alignment(filename::ASCIIString, max_gap_fraction::Float64)
     # pass 2
 
     Z = Array(Int8, fseqlen, length(seqs))
-    Header =  Array(ASCIIString, length(seqs));
-    Sequence =  Array(ASCIIString, length(seqs));
+    header =  Array(ASCIIString, length(seqs));
+    sequence =  Array(ASCIIString, length(seqs));
     seqid = 1
     for (name, seq) in f
-        #Header[seqid] = specname.captures[1];
-        Header[seqid] = name
-        Sequence[seqid] = seq
+        #header[seqid] = specname.captures[1];
+        header[seqid] = name
+        sequence[seqid] = seq
         seqs[end] < f.num_parsed && break
         seqs[seqid] == f.num_parsed || continue
         for i = 1:fseqlen
@@ -82,27 +76,23 @@ function read_fasta_alignment(filename::ASCIIString, max_gap_fraction::Float64)
 
     close(f)
 
-    SpecId, SpecName, UniprotId = compute_spec(Header)
+    spec_id, spec_name, uniprot_id = compute_spec(header)
 
-    Fa = Alignment(size(Z, 1), size(Z, 2), Int(maximum(Z)), 12,  Z', Sequence, Header, SpecName, SpecId, UniprotId)
-
-    return Fa
+    return Alignment(size(Z, 1), size(Z, 2), Int(maximum(Z)), 12,  Z', sequence, header, spec_name, spec_id, uniprot_id)
 end
 
 function specname(s::ASCIIString)
     if ismatch(r"\[(.*?)\]", s)
-        SpecName = convert(ASCIIString, match(r"\[(.*?)\]", s).captures[1])
-        UniprotId="000000"
-        return (UniprotId, SpecName)
+        spec_name = convert(ASCIIString, match(r"\[(.*?)\]", s).captures[1])
+        uniprot_id="000000"
+        return (uniprot_id, spec_name)
     elseif ismatch(r"^([A-Z,0-9].*?)\_([A-Z,0-9].*?)/", s)
-        UniprotId, SpecName = match(r"^([A-Z,0-9].*?)\_([A-Z,0-9].*?)/", s).captures
-        return (convert(ASCIIString, UniprotId), convert(ASCIIString, SpecName))
-
-
+        uniprot_id, spec_name = match(r"^([A-Z,0-9].*?)\_([A-Z,0-9].*?)/", s).captures
+        return (convert(ASCIIString, uniprot_id), convert(ASCIIString, spec_name))
     elseif ismatch(r"^(.*?)with(.*?)/(.*?)$", s)
-        SpecName = convert(ASCIIString, match(r"^(.*?)with(.*?)/(.*?)$", s).captures[3])
-        UniprotId= "000000"
-        return (UniprotId, SpecName)
+        spec_name = convert(ASCIIString, match(r"^(.*?)with(.*?)/(.*?)$", s).captures[3])
+        uniprot_id= "000000"
+        return (uniprot_id, spec_name)
     end
 
     n = length(s)
@@ -113,15 +103,11 @@ function specname(s::ASCIIString)
     for i = 1:length(s)
         if s[i] == '/'
             i1 = i
-            if flag1 == 1
-                error("badly formed string")
-            end
+            flag1 == 1 && error("badly formed string")
             flag1 = 1
         elseif s[i] == '_'
             i2 = i
-            if flag2 == 1
-                error("badly formed string")
-            end
+            flag2 == 1 && error("badly formed string")
             flag2 = 1
         end
     end
@@ -131,33 +117,33 @@ function specname(s::ASCIIString)
 end
 
 
-function compute_spec(Header::Vector{ASCIIString})
-    M = length(Header)
+function compute_spec(header::Vector{ASCIIString})
+    M = length(header)
 
-    SpecName = Array{ASCIIString}(M)
-    UniprotId  = Array{ASCIIString}(M)
+    spec_name = Array{ASCIIString}(M)
+    uniprot_id  = Array{ASCIIString}(M)
 
     for i = 1:M
-        protname, spec = specname(Header[i])
-        SpecName[i] = spec
-        UniprotId[i] = protname
+        protname, spec = specname(header[i])
+        spec_name[i] = spec
+        uniprot_id[i] = protname
     end
 
-    specunique = unique(SpecName)
+    specunique = unique(spec_name)
     nspec = length(specunique)
-    SpecId = zeros(Int, M)
+    spec_id = zeros(Int, M)
     idx = zeros(Int, M)
 
     @inbounds for j = 1:M
-        nname = length(SpecName[j])
+        nname = length(spec_name[j])
         for i = 1:nspec
-            SpecName[j] == specunique[i] || continue
-            SpecId[j] = i
+            spec_name[j] == specunique[i] || continue
+            spec_id[j] = i
             break
         end
     end
 
-    return SpecId, SpecName, UniprotId
+    return spec_id, spec_name, uniprot_id
 end
 
 @compat let alphabet = [ 1,21, 2, 3, 4, 5, 6, 7, 8,21, 9,10,11,12,21,13,14,15,16,17,21,18,19,21,20]
