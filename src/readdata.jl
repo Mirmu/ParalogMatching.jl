@@ -146,35 +146,22 @@ function compute_spec(header::Vector{ASCIIString})
     uniprot_id  = Array{ASCIIString}(M)
 
     for i = 1:M
-        protname, spec = specname(header[i])
-        spec_name[i] = spec
-        uniprot_id[i] = protname
+        uniprot_id[i], spec_name[i] = specname(header[i])
     end
 
     specunique = unique(spec_name)
-    nspec = length(specunique)
-    spec_id = zeros(Int, M)
-    idx = zeros(Int, M)
-
-    @inbounds for j = 1:M
-        nname = length(spec_name[j])
-        for i = 1:nspec
-            spec_name[j] == specunique[i] || continue
-            spec_id[j] = i
-            break
-        end
-    end
+    spec_id = [findfirst(specunique, sn) for sn in spec_name]
 
     return spec_id, spec_name, uniprot_id
 end
 
-@compat let alphabet = [ 1,21, 2, 3, 4, 5, 6, 7, 8,21, 9,10,11,12,21,13,14,15,16,17,21,18,19,21,20]
-                       # A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y
+let alphabet = [ 1,21, 2, 3, 4, 5, 6, 7, 8,21, 9,10,11,12,21,13,14,15,16,17,21,18,19,21,20]
+               # A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y
     global letter2num
-    function letter2num(c::Union{Char,UInt8})
-        i = UInt(c) - 0x40
+    letter2num(c::UInt) = letter2num(Char(c))
+    function letter2num(c::Char)
+        i = c - 'A' + 1
         1 <= i <= 25 && return alphabet[i]
         return 21
     end
 end
-nothing
