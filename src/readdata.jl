@@ -4,7 +4,6 @@ immutable Alignment <: DataSet
     N::Int
     M::Int
     q::Int
-    split::Int
     Z::Matrix{Int8}
     sequence::Vector{ASCIIString}
     header::Vector{ASCIIString}
@@ -80,7 +79,7 @@ function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float6
 
     spec_id, spec_name, uniprot_id = compute_spec(header)
 
-    return Alignment(size(Z, 1), size(Z, 2), Int(maximum(Z)), 12,  Z', sequence, header, spec_name, spec_id, uniprot_id)
+    return Alignment(size(Z, 1), size(Z, 2), Int(maximum(Z)), Z', sequence, header, spec_name, spec_id, uniprot_id)
 end
 
 function specname(s::ASCIIString)

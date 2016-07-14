@@ -201,7 +201,7 @@ end
 
 # This function takes alignments, priors matrices and ONE spec, and computes the matching following various strategies
 # The helpers for the strategies are below
-function give_correction(X1, X2, freq::FreqC, invertC::Matrix{Float64}, spec::Int, strat::AbstractString)
+function give_correction(X1, X2, freq::FreqC, invC::Matrix{Float64}, spec::Int, strat::AbstractString)
     @extract X1 : spec1=spec_id Z1=Z N1=N s=q-1
     @extract X2 : spec2=spec_id Z2=Z N2=N
     @extract freq : M Pi
@@ -232,7 +232,7 @@ function give_correction(X1, X2, freq::FreqC, invertC::Matrix{Float64}, spec::In
         vmean2 = repmat(Pi' / m, length(ind2))[:,r2]
 
         # the cost function as the matching algorithm wants it
-        cost = (Zb1-vmean1) * invertC[r1,r2] * (Zb2-vmean2)'
+        cost = (Zb1-vmean1) * invC[r1,r2] * (Zb2-vmean2)'
 
         if strat == "covariation"
             # Compute the matching via linear programming

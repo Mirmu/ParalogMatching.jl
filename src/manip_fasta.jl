@@ -1,8 +1,8 @@
 ##################### BLOCK FOR MANIPULATION OF THE ALIGNMENTS ##################
 
 # Orders and removes families that are too large
-function order_and_cut(Xtot::Alignment, cutoff::Int64)
-    @extract Xtot : spec_name N q split Z sequence uniprot_id spec_id header
+function order_and_cut(Xtot::Alignment, cutoff::Integer)
+    @extract Xtot : spec_name N q Z sequence uniprot_id spec_id header
     cand = tally_backref(spec_name)
     kept = Int64[]
     # Orders so that families have contiguous sequences organized in blocks
@@ -11,7 +11,7 @@ function order_and_cut(Xtot::Alignment, cutoff::Int64)
 	append!(kept, inds)
     end
 
-    return Alignment(N, length(kept), q, split, Z[kept,:],
+    return Alignment(N, length(kept), q, Z[kept,:],
 		     sequence[kept], header[kept], spec_name[kept], spec_id[kept], uniprot_id[kept])
 end
 
@@ -30,9 +30,9 @@ function harmonize_fasta(X1::Alignment, X2::Alignment)
     ind1, sid1 = compute_new_inds(spec_name1, kd)
     ind2, sid2 = compute_new_inds(spec_name2, kd)
 
-    al1 = Alignment(N1, length(ind1), q1, 0, Z1[ind1, :], sequence1[ind1], header1[ind1],
+    al1 = Alignment(N1, length(ind1), q1, Z1[ind1, :], sequence1[ind1], header1[ind1],
 		    spec_name1[ind1], sid1, uniprot_id1[ind1])
-    al2 = Alignment(N2, length(ind2), q2, 0, Z2[ind2, :], sequence2[ind2], header2[ind2],
+    al2 = Alignment(N2, length(ind2), q2, Z2[ind2, :], sequence2[ind2], header2[ind2],
 		    spec_name2[ind2], sid2, uniprot_id2[ind2])
 
     return al1, al2

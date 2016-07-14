@@ -1,4 +1,4 @@
-############################BLOCK FOR RESULTS PLOTTING/SCORING#########################
+########################### BLOCK FOR RESULTS PLOTTING/SCORING ########################
 
 # Computing the ROC Curve
 #   ndata: distance file
@@ -55,7 +55,7 @@ function curve_true(ordering)
 end
 
 
-#########################EDGES SCORING BLOCK##########################################
+######################## EDGES SCORING BLOCK #########################################
 
 # This function takes the result and recomputes the model
 # then it ranks the edges for the giving model
@@ -174,7 +174,7 @@ function trim_cov_match(nameX1, nameX2, namematch, prop, nameoutput)
 end
 
 #Function to return the Feinauer score of an alignment
-function compute_score(score,split)
+function compute_score(score, split)
     counter = 0
     mean = 0
     l = size(score)[1]

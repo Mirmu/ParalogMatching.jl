@@ -23,7 +23,7 @@ end
 
 # Initializes the problem by preparing the fasta, allocating frequency matrix
 # and correlation matrices, inverting them and returning them
-function initialize(Xi1, Xi2, cut)
+function initialize(Xi1::Alignment, Xi2::Alignment, cut::Integer)
     println("initializing the matching, removing families larger than $(cut)...")
     X1, X2 = harmonize_fasta(order_and_cut(Xi1, cut), order_and_cut(Xi2, cut))
     match = start_matching(X1, X2)
@@ -47,15 +47,15 @@ end
 
 # par_corr gathers for each species in specl, the matching obtained by the "strat" strategy
 # And returns an array of those matchings
-function par_corr(X1, X2, freq::FreqC, invertC, specl::Vector{Int}, strat)
-    res = [give_correction(X1, X2, freq, invertC, i, strat) for i in specl]
-    return res
+function par_corr(X1::Alignment, X2::Alignment, freq::FreqC, invC::Matrix{Float64},
+		  specl::Vector{Int}, strat::AbstractString)
+    return [give_correction(X1, X2, freq, invC, i, strat) for i in specl]
 end
 
 # spec_entropy computes the number of potential matchings for each species
 # And returns the ordered list, from the easiest fams to the hardest
 # WARNING: Works for harmonized Fasta only
-function spec_entropy(X1, X2)
+function spec_entropy(X1::Alignment, X2::Alignment)
     @extract X1 : spec_id1=spec_id
     @extract X2 : spec_id2=spec_id
     bib1 = tally(spec_id1)
