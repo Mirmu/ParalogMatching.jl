@@ -1,6 +1,6 @@
 module ParaMatch
 
-using FastaIO, MacroUtils, Iterators, Compat
+using FastaIO, ExtractMacro, Iterators, Compat
 using Distributions
 using MathProgBase
 
