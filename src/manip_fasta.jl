@@ -1,17 +1,14 @@
-######################BLOCK FOR MANIPULATION OF THE ALIGNMENTS###################
+##################### BLOCK FOR MANIPULATION OF THE ALIGNMENTS ##################
 
 # Orders and removes families that are too large
 function order_and_cut(Xtot::Alignment, cutoff::Int64)
     @extract Xtot : spec_name N q split Z sequence uniprot_id spec_id header
-    cand = tally(spec_name)
-    ncand = [a[1] for a in filter(x->x[2]≤cutoff, cand)]
+    cand = tally_backref(spec_name)
     kept = Int64[]
-
-    # You may add more criteria for filtering here...
-
     # Orders so that families have contiguous sequences organized in blocks
-    for fam in ncand
-	append!(kept, find(x->x==fam, spec_name))
+    for (fam,n,inds) in cand
+	n > cutoff && continue
+	append!(kept, inds)
     end
 
     return Alignment(N, length(kept), q, split, Z[kept,:],

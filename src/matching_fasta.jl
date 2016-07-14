@@ -1,8 +1,8 @@
-###########################PRE PROCESSING THE MATCHING###############################
+########################## PRE PROCESSING THE MATCHING ##############################
 
 # Returns the initial matching between single species
 # Works only for Harmonized FASTA
-function start_matching(X1, X2)
+function start_matching(X1::Alignment, X2::Alignment)
     @extract X1 : spec_id1=spec_id
     @extract X2 : spec_id2=spec_id
     match = zeros(spec_id1)

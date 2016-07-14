@@ -18,6 +18,30 @@ function tally(list)
     return tallist
 end
 
+# Same as tally, but also keeps track of the indices associated to each class
+function tally_backref(list)
+    p = sortperm(list)
+    slist = list[p]
+    counter = 0
+    comp = slist[1]
+    inds = Int[]
+    tallist = Tuple{eltype(list),Int64,Vector{Int}}[]
+
+    for (i,el) in zip(p,slist)
+	if el == comp
+	    counter += 1
+	    push!(inds, i)
+	else
+	    push!(tallist, (comp, counter, inds))
+	    comp = el
+	    inds = Int[i]
+	    counter = 1
+	end
+    end
+    push!(tallist, (comp, counter, inds))
+    return tallist
+end
+
 # Returns the indexes of the list that have unique labels
 # WARNING!: works only for sorted lists
 function index_of_unique(list)
