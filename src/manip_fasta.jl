@@ -22,16 +22,16 @@ end
 # Filter the species in common between both FASTA and remove the others, that cannot be matched
 # Giving those species a common labeling
 function harmonize_fasta(X1::Alignment, X2::Alignment)
-    @extract X1 : spec_name1=spec_name N1=N q1=q Z1=Z sequence1=sequence uniprot_id1=uniprot_id spec_id1=spec_id header1=header
-    @extract X2 : spec_name2=spec_name N2=N q2=q Z2=Z sequence2=sequence uniprot_id2=uniprot_id spec_id2=spec_id header2=header
+    @extract X1 : spec_name1=spec_name N1=N q1=q Z1=Z sequence1=sequence uniprot_id1=uniprot_id header1=header
+    @extract X2 : spec_name2=spec_name N2=N q2=q Z2=Z sequence2=sequence uniprot_id2=uniprot_id header2=header
     us1 = unique(spec_name1)
     us2 = unique(spec_name2)
     kept = intersect(us1, us2)
 
-    kd = [s=>i for (i,s) in enumerate(kept)]
+    kd = [s=>i for (i,s) in enumerate(kept)] # associate an index to each kept species
 
-    ind1, sid1 = compute_ind(spec_name1, kd)
-    ind2, sid2 = compute_ind(spec_name2, kd)
+    ind1, sid1 = compute_new_inds(spec_name1, kd)
+    ind2, sid2 = compute_new_inds(spec_name2, kd)
 
     al1 = Alignment(N1, length(ind1), q1, 0, Z1[ind1, :], sequence1[ind1], header1[ind1],
 		    spec_name1[ind1], sid1, uniprot_id1[ind1])
@@ -42,15 +42,17 @@ function harmonize_fasta(X1::Alignment, X2::Alignment)
 end
 
 # auxiliary function for harmonize_fasta
-function compute_ind(spec_name::Vector{ASCIIString}, kd::Dict{ASCIIString,Int})
-    ind = Int[]
-    sid = Int[]
-    for (i,f) in enumerate(spec_name)
-	ctr = get(kd, f, 0)
-	ctr == 0 && continue
-	push!(sid, ctr)
+function compute_new_inds(spec_name::Vector{ASCIIString}, kd::Dict{ASCIIString,Int})
+    ind = Int[] # the subset of indices to keep
+    sid = Int[] # the new species ids
+    for (i,s) in enumerate(spec_name)
+	id = get(kd, s, 0) # get the species index in the `kept` vector
+	id == 0 && continue # the species is not in `kept`
+	push!(sid, id)
 	push!(ind, i)
     end
+    # here, ind is sorted but sid is not
+    # we want to sort everything according to the new species ids
     p = sortperm(sid)
 
     return ind[p], sid[p]
