@@ -82,6 +82,28 @@ function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float6
 end
 
 function specname(s::ASCIIString)
+    regex1 = r"\[(.*?)\]"
+    regex2 = r"^([A-Z0-9]*)_([A-Z0-9]*)/"
+    regex3 = r"^(.*?)with(.*?)/(.*)$"
+    regex4 = r"^([^/_]+)/[^/_]+_([^/_]+)$"
+
+    if ismatch(regex1, s)
+        spec_name = match(regex1, s).captures[1]
+        uniprot_id = "000000"
+    elseif ismatch(regex2, s)
+        uniprot_id, spec_name = match(regex1, s).captures
+    elseif ismatch(regex3, s)
+        spec_name = match(regex3, s).captures[3]
+        uniprot_id = "000000"
+    elseif ismatch(regex4, s)
+        uniprot_id, spec_name = match(regex4, s).captures
+    else
+        error("unrecognized spec string: $s")
+    end
+    return convert(ASCIIString, uniprot_id), convert(ASCIIString, spec_name)
+end
+
+function specname_OLD(s::ASCIIString)
     if ismatch(r"\[(.*?)\]", s)
         spec_name = convert(ASCIIString, match(r"\[(.*?)\]", s).captures[1])
         uniprot_id="000000"
