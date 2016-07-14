@@ -228,9 +228,8 @@ function give_correction(X1, X2, freq::FreqC, invertC::Matrix{Float64}, spec::In
 
         # extracts the mean of the prior (one could add the additional contribution brought by the "spec")
         # but it does not change the results and we consider non bijective case here
-        vmean = repmat(Pi' / m, length(ind1))
-        vmean1 = vmean[:,r1]
-        vmean2 = vmean[:,r2]
+        vmean1 = repmat(Pi' / m, length(ind1))[:,r1]
+        vmean2 = repmat(Pi' / m, length(ind2))[:,r2]
 
         # the cost function as the matching algorithm wants it
         cost = (Zb1-vmean1) * invertC[r1,r2] * (Zb2-vmean2)'
