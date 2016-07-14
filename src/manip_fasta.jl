@@ -61,96 +61,87 @@ function harmonize_fasta(X1, X2)
 	end
     end
 
-    al1 = Alignment(N1, length(lind1), q1, 0, Z1[lind1, :], sequence1[lind1], header1[lind1], spec_name1[lind1], spec_id1[lind1], uniprot_id1[lind1])
-    al2 = Alignment(N2, length(lind2), q2, 0, Z2[lind2, :], sequence2[lind2], header2[lind2], spec_name2[lind2], spec_id2[lind2], uniprot_id2[lind2])
+    al1 = Alignment(N1, length(lind1), q1, 0, Z1[lind1, :], sequence1[lind1], header1[lind1],
+		    spec_name1[lind1], spec_id1[lind1], uniprot_id1[lind1])
+    al2 = Alignment(N2, length(lind2), q2, 0, Z2[lind2, :], sequence2[lind2], header2[lind2],
+		    spec_name2[lind2], spec_id2[lind2], uniprot_id2[lind2])
 
     return al1, al2
 end
 
-#####################BLOCK FOR WRITING FASTA FROM ALIGNMENTS OBJECTS########
+#################### BLOCK FOR WRITING FASTA FROM ALIGNMENTS OBJECTS #######
 
-# Writes a given Alignments under "name"
-function write_fasta(X1, name)
-    g = open(name, "w")
-    for i in 1:(X1.M)
-	head = join([">", X1.header[i]])
-	println(g, head)
-	println(g, X1.sequence[i])
+# Writes a given Alignment under "name"
+function write_fasta(X1::Alignment, name::AbstractString)
+    @extract X1 : header sequence
+    FastaWriter(name) do f
+	for (h,s) in zip(header, sequence)
+	    writeentry(f, (h, s))
+	end
     end
-    close(g)
 end
 
 # Rewrites the output as a FASTA for two given Alignments and a given matching, under the "name"
-function rewrite_fasta_match(X1, X2, match, name)
-    g = open(name, "w")
-    for (i,edge) in enumerate(match)
-	edge == 0 && continue
-	X1.spec_name[i] == X2.spec_name[edge] || error("do you have a well formed match ?")
-
-	head = join([">", X1.uniprot_id[i], "with", X2.uniprot_id[edge], "/", X1.spec_name[i]])
-	println(g, head)
-	print(g, X1.sequence[i])
-	println(g, X2.sequence[edge])
+function rewrite_fasta_match(X1::Alignment, X2::Alignment, match::Vector{Int}, name::AbstractString)
+    FastaWriter(name) do f
+	for (i,edge) in enumerate(match)
+	    edge == 0 && continue
+	    X1.spec_name[i] == X2.spec_name[edge] || error("do you have a well formed match ?")
+	    h = string(">", X1.uniprot_id[i], "with", X2.uniprot_id[edge], "/", X1.spec_name[i])
+	    write(f, h)
+	    write(f, X1.sequence[i])
+	    write(f, X2.sequence[edge])
+	end
     end
-    close(g)
 end
 
-######################BLOCK FOR COMPARING TWO FASTA###########################
+##################### BLOCK FOR COMPARING TWO FASTA ##########################
 
-# Computes the Fasta that is the intersection of two FASTA of names "names1" and "names2"
-# If no output, it simply returns the overlap value, with both lengths of the FASTA
-function overlap_fasta(name1, name2; opt::AbstractString = "no-out")
+# Computes the intersection of two FASTA files "name1" and "name2", and optionally writes it to a file.
+# If printtofile is false, it simply returns the intersection value, with both lengths of the FASTA.
+function intersaction_fasta(name1::AbstractString, name2::AbstractString; printtofile::Bool = false)
     X1 = read_fasta_alignment(name1)
     X2 = read_fasta_alignment(name2)
-    pool = unique(X1.spec_name)
-    len1 = X1.M
-    len2 = X2.M
-    over = 0
-    if opt == "out"
-	str = string("OLP", name1, "_", name2, ".fasta")
-	g = open(str, "w")
+    M1 = X1.M
+    M2 = X2.M
+    isize = 0
+    if printtofile
+	f = FastaWriter(string("INTERSECTION_", name1, "-", name2, ".fasta.gz"))
     end
-    for (i,j) in enumerate(X1.header)
-	j ∈ X2.header || continue
-	if opt == "out"
-	    println(g, string(">", j))
-	    println(g, X1.sequence[i])
+    try
+	for (h,s) in zip(X1.header, X1.sequence)
+	    h ∈ X2.header || continue
+	    printtofile && writeentry(f, (h, s))
+	    isize += 1
 	end
-	over += 1
+    finally
+	printtofile && close(f)
     end
-    if opt == "out"
-	close(g)
-    end
-    return over, len1, len2
+    return isize, M1, M2
 end
 
-# Computes the FASTA that is the Union of the two FASTA of names "names1" and "names2"
-# Same return than Overlap
-function union_fasta(name1, name2; opt::AbstractString = "no-out")
+# Computes the union of two FASTA files "name1" and "name2", and optionally writes it to a file.
+# If printtofile is false, it simply returns the union value, with both lengths of the FASTA.
+function union_fasta(name1::AbstractString, name2::AbstractString; printtofile::Bool = false)
     X1 = read_fasta_alignment(name1)
     X2 = read_fasta_alignment(name2)
-    pool = unique(X1.spec_name)
-    len1 = X1.M
-    len2 = X2.M
-    over = 0
-    if opt == "out"
-	str = string("UNION", name1, "_", name2, ".fasta")
-	g = open(str, "w")
-	for i in 1:len1
-	    println(g, string(">", X1.header[i]))
-	    println(g, X1.sequence[i])
+    M1 = X1.M
+    M2 = X2.M
+    usize = M1
+    if printtofile
+	f = FastaWriter(string("UNION_", name1, "-", name2, ".fasta.gz"))
+	for (h,s) in zip(X1.header, X1.sequence)
+	    writeentry(f, (h, s))
 	end
     end
-    for (i,j) in enumerate(X2.header)
-	j ∈ X1.header && continue
-	if opt == "out"
-	    println(g, string(">", j))
-	    println(g, X2.sequence[i])
+    try
+	for (h,s) in zip(X2.header, X2.sequence)
+	    h ∈ X1.header && continue
+	    printtofile && writeentry(f, (h, s))
+	    usize += 1
 	end
-	over += 1
+    finally
+	printtofile && close(f)
     end
-    if opt == "out"
-	close(g)
-    end
-    return over, len1, len2
+    return usize, M1, M2
 end
