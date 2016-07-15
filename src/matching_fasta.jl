@@ -101,9 +101,13 @@ end
 #   "greedy":      computes a matching from a greedy strategy with the co evolution signal
 # the argument "a" should be the output of the initialize function that can be found in Fasta_Manip.jl
 
-function run_matching(a, batch, strat::AbstractString)
+function run_matching(a, batch, strat::AbstractString = "covariation")
     # Takes the ouput of initialize
     X1, X2, match, freq, corr, invC = a
+
+    valid_strats = ["covariation", "genetic", "random", "greedy"]
+    strat ∈ valid_strats ||
+	throw(ArgumentError("unknown strategy: $strat. Must be one of: $(join(valid_strats, ", ", " or "))"))
 
     # Computes the entropy of the families and batch them from easiest to hardest
     spec = spec_entropy(X1, X2)
