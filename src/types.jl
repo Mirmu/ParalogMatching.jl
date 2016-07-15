@@ -1,4 +1,4 @@
-############################BLOCK FOR TYPES DEFINITION AND ALLOCATION######################
+########################### BLOCK FOR TYPES DEFINITION AND ALLOCATION #####################
 
 # FreqC is the type of the frequency matrix
 # Pij contains the joint (2 points) frequency

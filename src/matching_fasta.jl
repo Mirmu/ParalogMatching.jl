@@ -77,7 +77,7 @@ function spec_entropy(X1::Alignment, X2::Alignment)
     return [a[1] for a in filter(x->x[2]!=0, sort(entropy, by=x->x[2]))]
 end
 
-###############################MAIN FUNCTION#####################################
+############################## MAIN FUNCTION ####################################
 
 # First a helper...
 # given a list of specs with their respective matching within species, it updates the global match vector

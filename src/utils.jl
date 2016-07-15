@@ -1,4 +1,4 @@
-###########################OPTIMIZATION AND MATCHING BLOCK####################################
+########################## OPTIMIZATION AND MATCHING BLOCK ###################################
 
 function mpbmatch{T<:AbstractFloat}(D::DenseMatrix{T}, solver::MathProgBase.AbstractMathProgSolver)
     N1, N2 = size(D)
@@ -39,7 +39,7 @@ function matching_matrix(N1::Int, N2::Int)
     return sparse(I, J, V, N1 + N2, N1 * N2)
 end
 
-######################HELPERS FOR THE MATCHING PROBLEM#################################
+##################### HELPERS FOR THE MATCHING PROBLEM ################################
 
 # Gets both the lines of alignments matched for a given list of specs
 function get_edges(X1, X2, match, specs::Vector{Int64})
@@ -197,7 +197,7 @@ function expand_binary(Z, s)
     return expZ
 end
 
-########################################BLOCK FOR COMPUTING THE MATCHING OF A GIVEN SPECIES, KNOWING THE PRIORS#################################
+####################################### BLOCK FOR COMPUTING THE MATCHING OF A GIVEN SPECIES, KNOWING THE PRIORS ################################
 
 # This function takes alignments, priors matrices and ONE spec, and computes the matching following various strategies
 # The helpers for the strategies are below
@@ -268,7 +268,7 @@ function give_correction(X1, X2, freq::FreqC, invC::Matrix{Float64}, spec::Int, 
     return permres
 end
 
-##################################HELPERS FOR THE MATCHING########################
+################################# HELPERS FOR THE MATCHING #######################
 
 # Convert the permutation matrix of Gurobi into a matchin array
 # The matching format is
