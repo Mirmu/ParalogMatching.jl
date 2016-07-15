@@ -84,9 +84,9 @@ end
 
 function specname(s::ASCIIString)
     regex1 = r"\[(.*?)\]"
-    regex2 = r"^([A-Z0-9]*)_([A-Z0-9]*)/"
+    regex2 = r"^([A-Z0-9]*?)_([A-Z0-9]*?)/"
     regex3 = r"^(.*?)with(.*?)/(.*)$"
-    regex4 = r"^([^/_]+)/[^/_]+_([^/_]+)$"
+    regex4 = r"^([^/_]+?)/[^/_]+?_([^/_]+?)$"
 
     if ismatch(regex1, s)
         spec_name = match(regex1, s).captures[1]
@@ -139,7 +139,6 @@ function specname_OLD(s::ASCIIString)
     return (s[1:i1-1], s[i2+1:end])
 end
 
-
 function compute_spec(header::Vector{ASCIIString})
     M = length(header)
 
@@ -151,7 +150,8 @@ function compute_spec(header::Vector{ASCIIString})
     end
 
     specunique = unique(spec_name)
-    spec_id = [findfirst(specunique, sn) for sn in spec_name]
+    sdict = [s=>i for (i,s) in enumerate(specunique)]
+    spec_id = Int[sdict[sn] for sn in spec_name]
 
     return spec_id, spec_name, uniprot_id
 end
