@@ -62,7 +62,6 @@ function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float6
     sequence =  Array(ASCIIString, length(seqs));
     seqid = 1
     for (name, seq) in f
-        #header[seqid] = specname.captures[1];
         header[seqid] = name
         sequence[seqid] = seq
         seqs[end] < f.num_parsed && break

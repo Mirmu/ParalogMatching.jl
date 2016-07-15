@@ -23,8 +23,10 @@ end
 
 # Initializes the problem by preparing the fasta, allocating frequency matrix
 # and correlation matrices, inverting them and returning them
-function initialize(Xi1::Alignment, Xi2::Alignment, cut::Integer)
-    println("initializing the matching, removing families larger than $(cut)...")
+function initialize_matching(Xi1::Alignment, Xi2::Alignment, cut::Integer = typemax(Int))
+    println("initializing the matching",
+            cut < typemax(Int) ? ", removing families larger than $cut" : "",
+	    "...")
     X1, X2 = harmonize_fasta(order_and_cut(Xi1, cut), order_and_cut(Xi2, cut))
     match = start_matching(X1, X2)
 
