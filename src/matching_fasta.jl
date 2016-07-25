@@ -2,17 +2,16 @@
 
 ########################## PRE PROCESSING THE MATCHING ##############################
 
-# Applies cutoffs, harmonizes alignments
 """
     prepare_alignments(X1::Alignment, X2::Alignment; cutoff::Integer = 500)
 
 Prepares two alignments (as returned by [`read_fasta_alignment`](@ref)) and returns
-a "harmonized alignment" object, containing two new alignments in which only the
-sequences belonging to species which exist in both alignments are kept, and which
-is ready to be passed to [`run_matching`](@ref).
+a `HarmonizedAlignments` object. This object contains two filtered version of the
+original alignments, in which only the sequences belonging to species which exist
+in both alignments are kept, and which is ready to be passed to [`run_matching`](@ref).
 
 The `cutoff` keyword argument can be used to discard all species for which there
-are more than a certain number of sequences in the alignment. Use `0` to disable this
+are more than a certain number of sequences in either alignment. Use `0` to disable this
 filter entirely.
 """
 function prepare_alignments(Xi1::Alignment, Xi2::Alignment; cutoff::Integer = 500)
@@ -119,15 +118,6 @@ function apply_matching!(X1, X2, match, lspec, lmatch)
     return nothing
 end
 
-# The main function that runs the matching
-# Works for harmonized Fasta
-# options "strategy" for the matching are :
-#   "covariation": computes the matching from co evolution signal
-#   "genetic":     computes the matching from genetic proximity (if FASTA contains genetic position info)
-#   "random":      computes a random matching for null hypothesis
-#   "greedy":      computes a matching from a greedy strategy with the co evolution signal
-# the argument "a" should be the output of the initialize function that can be found in Fasta_Manip.jl
-
 """
     run_matching(X12::HarmonizedAlignments;
 		 batch = 1,
@@ -217,18 +207,16 @@ end
 		     strategy = "covariation",
 		     lpsolver = nothing)
 
-A function to perform the paralog matching from two given FASTA files containing alignments for
+This function performs the paralog matching from two given FASTA files containing the alignments for
 two different protein families. When the matching is done, it writes the result in a new FASTA file,
 in which each sequence is the concatenation of two mathing sequences in the original file.
 
-The sequences headers in the output file have the format `>ID1::ID2/SPECIES`, where `ID1` represents
-the ID read from the first alignment, `ID2` that for the second alignment, and `SPECIES` is the species
-name.
+The output file format is documented in [`write_fasta_match`](@ref).
 
 The keyword arguments are documented in [`prepare_alignments`](@ref) and [`run_matching`](@ref).
 
-This function also returns the harmonized alignemnt (produced by [`prepare_alignments`](@ref)) and
-the resulting match (as returned by [`run_matching`](@ref)).
+Besides writing the `outfile`, this function also returns two values: the harmonized alignment (produced
+by [`prepare_alignments`](@ref)) and the resulting match (as returned by [`run_matching`](@ref)).
 """
 function paralog_matching(infile1::AbstractString,
 			  infile2::AbstractString,
@@ -244,7 +232,7 @@ function paralog_matching(infile1::AbstractString,
     X12 = prepare_alignments(X1, X2, cutoff=cutoff)
     match = run_matching(X12, batch=batch, strategy=strategy, lpsolver=lpsolver)
 
-    rewrite_fasta_match(X12.X1, X12.X2, match, outfile)
+    write_fasta_match(X12, match, outfile)
 
     println("done")
 

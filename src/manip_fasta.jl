@@ -76,9 +76,21 @@ function write_fasta(X1::Alignment, name::AbstractString)
     end
 end
 
-# Rewrites the output as a FASTA for two given Alignments and a given matching, under the "name"
-function rewrite_fasta_match(X1::Alignment, X2::Alignment, match::Vector{Int}, name::AbstractString)
-    FastaWriter(name) do f
+"""
+    write_fasta_match(X12::HarmonizedAlignments, match::Vector{Int}, outfile::AbstractString)
+
+Writes a new FASTA file obtained from the two alignments contained in the `X12`
+object and the matching contained in `match`.
+
+The sequences headers in the output file have the format `>ID1::ID2/SPECIES`, where `ID1` represents
+the ID read from the first alignment, `ID2` that for the second alignment, and `SPECIES` is the species
+name.
+
+The new sequences in the output file are the concatenation of the matched sequences.
+"""
+function write_fasta_match(X12::HarmonizedAlignments, match::Vector{Int}, outfile::AbstractString)
+    @extract X12 : X1 X2
+    FastaWriter(outfile) do f
 	for (i,edge) in enumerate(match)
 	    edge == 0 && continue
 	    X1.spec_name[i] == X2.spec_name[edge] || error("do you have a well formed match ?")

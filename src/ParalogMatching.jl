@@ -7,7 +7,7 @@ using Distributions
 using MathProgBase
 
 export read_fasta_alignment, prepare_alignments, run_matching,
-       paralog_matching
+       write_fasta_match, paralog_matching
 
 import Compat: String
 

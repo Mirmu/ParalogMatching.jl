@@ -10,19 +10,19 @@ have more than a fraction `max_gap_fraction` of missing values (gaps) in the ali
 
 The function automatically tries to parse the species names and the Uniprot ID, using
 a standard format specification. The species names are then used in the matching procedure;
-the Uniprot IDs are only used for writing the output file.
+the Uniprot IDs are only used for writing the output files.
 
-You can parse arbitrary files by providing a custom `header_regex`, in which case it needs
-to have exactly two capture groups, the first one returning the Uniprot ID and the second the
+You can parse arbitrary files by providing a custom `header_regex`, which needs to have
+exactly two capture groups, the first one returning the Uniprot ID and the second the
 species name. For example, if the headers in your FASTA file look like this:
 
-```
+```text
 >SOMELOCATION/SOMESPECIES/OTHERINFO
 ```
 
 then you can use a regex like this one: `read_fasta_alignment(..., header_regex=r"^([^/]+)/([^/]+)/")`,
 i.e. line start, anything except a slash (captured), followed by a slash, then anything except a slash
-(captured), then a slash.
+(captured), then a slash — the remainder of the line is then simply ignored.
 """
 function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float64 = 1.0; header_regex::Union{Void,Regex} = nothing)
     f = FastaReader(filename)
