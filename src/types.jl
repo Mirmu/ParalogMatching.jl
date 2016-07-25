@@ -1,5 +1,27 @@
 ########################### BLOCK FOR TYPES DEFINITION AND ALLOCATION #####################
 
+immutable Alignment
+    N::Int
+    M::Int
+    q::Int
+    Z::Matrix{Int8}
+    sequence::Vector{ASCIIString}
+    header::Vector{ASCIIString}
+    spec_name::Vector{ASCIIString}
+    spec_id::Vector{Int}
+    uniprot_id::Vector{ASCIIString}
+end
+
+Base.(:(==))(X1::Alignment, X2::Alignment) = all(fn->getfield(X1, fn) == getfield(X2, fn), fieldnames(Alignment))
+
+immutable HarmonizedAlignments
+    X1::Alignment
+    X2::Alignment
+end
+
+Base.(:(==))(H1::HarmonizedAlignments, H2::HarmonizedAlignments) =
+    all(fn->getfield(H1, fn) == getfield(H2, fn), fieldnames(HarmonizedAlignments))
+
 # FreqC is the type of the frequency matrix
 # Pij contains the joint (2 points) frequency
 # Pi contains the average (1 point) frequency

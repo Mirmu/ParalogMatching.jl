@@ -37,7 +37,7 @@ function harmonize_fasta(X1::Alignment, X2::Alignment)
     al2 = Alignment(N2, length(ind2), q2, Z2[ind2, :], sequence2[ind2], header2[ind2],
 		    spec_name2[ind2], sid2, uniprot_id2[ind2])
 
-    return al1, al2
+    return HarmonizedAlignments(al1, al2)
 end
 
 # auxiliary function for harmonize_fasta

@@ -6,15 +6,15 @@ function prepare_alignments(Xi1::Alignment, Xi2::Alignment, cut::Integer = 500)
     println("initializing the matching",
 	    cut < typemax(Int) ? ", removing families larger than $cut" : "",
 	    "...")
-    X1, X2 = harmonize_fasta(order_and_cut(Xi1, cut), order_and_cut(Xi2, cut))
-    return X1, X2
+    return harmonize_fasta(order_and_cut(Xi1, cut), order_and_cut(Xi2, cut))
 end
 
 # Returns the initial matching between single species
 # Works only for Harmonized FASTA
-function start_matching(X1::Alignment, X2::Alignment)
-    @extract X1 : spec_id1=spec_id
-    @extract X2 : spec_id2=spec_id
+function start_matching(X12::HarmonizedAlignments)
+    @extract X12 : X1 X2
+    @extract X1  : spec_id1=spec_id
+    @extract X2  : spec_id2=spec_id
     match = zeros(spec_id1)
 
     #finds the indices of the species with one single sequence
@@ -34,9 +34,11 @@ end
 # Initializes the problem from the output of prepare_alignments,
 # allocating frequency matrix and correlation matrices, inverting
 # them and returning them
-function initialize_matching(X1::Alignment, X2::Alignment)
+function initialize_matching(X12::HarmonizedAlignments)
+    @extract X12 : X1 X2
+
     # Match by uniqueness
-    match = start_matching(X1, X2)
+    match = start_matching(X12)
 
     # Computing the prior correlation matrix and interaction matrix
     freq = FreqC(X1, X2)
@@ -111,8 +113,8 @@ end
 #   "greedy":      computes a matching from a greedy strategy with the co evolution signal
 # the argument "a" should be the output of the initialize function that can be found in Fasta_Manip.jl
 
-function run_matching(X1::Alignment, X2::Alignment, batch::Integer = 1; strat::AbstractString = "covariation")
-    X1, X2, match, freq, corr, invC = initialize_matching(X1, X2)
+function run_matching(X12::HarmonizedAlignments, batch::Integer = 1; strat::AbstractString = "covariation")
+    X1, X2, match, freq, corr, invC = initialize_matching(X12)
 
     valid_strats = ["covariation", "genetic", "random", "greedy"]
     strat ∈ valid_strats ||

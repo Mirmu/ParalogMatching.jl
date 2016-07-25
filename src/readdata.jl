@@ -1,19 +1,3 @@
-abstract DataSet
-
-immutable Alignment <: DataSet
-    N::Int
-    M::Int
-    q::Int
-    Z::Matrix{Int8}
-    sequence::Vector{ASCIIString}
-    header::Vector{ASCIIString}
-    spec_name::Vector{ASCIIString}
-    spec_id::Vector{Int}
-    uniprot_id::Vector{ASCIIString}
-end
-
-Base.(:(==))(X1::Alignment, X2::Alignment) = all(fn->getfield(X1, fn) == getfield(X2, fn), fieldnames(Alignment))
-
 function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float64 = 1.0; header_regex::Union{Void,Regex} = nothing)
     f = FastaReader(filename)
 

@@ -6,6 +6,9 @@ using MathProgBase
 
 export read_fasta_alignment, prepare_alignments, run_matching
 
+# Including the types used for the Matching
+include("types.jl")
+
 # Including the reader for the FASTA
 include("readdata.jl")
 
@@ -14,9 +17,6 @@ include("utils_fasta.jl")
 
 # Including the routines for manipulation/Preparing for merging the Alignment
 include("manip_fasta.jl")
-
-# Including the types used for the Matching
-include("types.jl")
 
 # utils.jl contains the matching/optimization routines
 include("utils.jl")
