@@ -42,8 +42,8 @@ function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float6
     # pass 2
 
     Z = Array(Int8, fseqlen, length(seqs))
-    header =  Array(ASCIIString, length(seqs));
-    sequence =  Array(ASCIIString, length(seqs));
+    header =  Array(String, length(seqs));
+    sequence =  Array(String, length(seqs));
     seqid = 1
     for (name, seq) in f
         header[seqid] = name
@@ -65,7 +65,7 @@ function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float6
     return Alignment(size(Z, 1), size(Z, 2), Int(maximum(Z)), Z', sequence, header, spec_name, spec_id, uniprot_id)
 end
 
-function specname(s::ASCIIString, header_regex::Union{Void,Regex} = nothing)
+function specname(s::String, header_regex::Union{Void,Regex} = nothing)
     if header_regex ≢ nothing
         # user-defined format
         if ismatch(header_regex)
@@ -96,21 +96,25 @@ function specname(s::ASCIIString, header_regex::Union{Void,Regex} = nothing)
             error("unrecognized spec string: $s")
         end
     end
-    return convert(ASCIIString, uniprot_id), convert(ASCIIString, spec_name)
+    return convert(String, uniprot_id), convert(String, spec_name)
 end
 
-function compute_spec(header::Vector{ASCIIString}, header_regex::Union{Void,Regex} = nothing)
+function compute_spec(header::Vector{String}, header_regex::Union{Void,Regex} = nothing)
     M = length(header)
 
-    spec_name = Array{ASCIIString}(M)
-    uniprot_id  = Array{ASCIIString}(M)
+    spec_name = Array{String}(M)
+    uniprot_id  = Array{String}(M)
 
     for i = 1:M
         uniprot_id[i], spec_name[i] = specname(header[i], header_regex)
     end
 
     specunique = unique(spec_name)
-    sdict = [s=>i for (i,s) in enumerate(specunique)]
+    #@compat sdict = Dict([s=>i for (i,s) in enumerate(specunique)])
+    sdict = Dict{String,Int}() # TODO: use generators when 0.4 support is dropped
+    for (i,s) in enumerate(specunique)
+        sdict[s] = i
+    end
     spec_id = Int[sdict[sn] for sn in spec_name]
 
     return spec_id, spec_name, uniprot_id

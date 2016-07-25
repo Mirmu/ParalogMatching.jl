@@ -7,6 +7,8 @@ using MathProgBase
 export read_fasta_alignment, prepare_alignments, run_matching,
        paralog_matching
 
+import Compat: String
+
 # Including the types used for the Matching
 include("types.jl")
 
