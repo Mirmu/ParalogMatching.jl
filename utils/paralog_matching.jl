@@ -1,5 +1,7 @@
 #!/usr/bin/env julia
 
+# This file is a part of ParalogMatching.jl. License is GPL3+: http://github.com/Mirmu/ParalogMatching.jl/LICENCE.md
+
 include("../src/ParalogMatching.jl")
 using .ParalogMatching
 using ArgParse

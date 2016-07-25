@@ -1,3 +1,5 @@
+# This file is a part of ParalogMatching.jl. License is GPL3+: http://github.com/Mirmu/ParalogMatching.jl/LICENCE.md
+
 ########################### BLOCK FOR RESULTS PLOTTING/SCORING ########################
 
 # Computing the ROC Curve

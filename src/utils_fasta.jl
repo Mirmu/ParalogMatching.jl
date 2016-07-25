@@ -1,3 +1,5 @@
+# This file is a part of ParalogMatching.jl. License is GPL3+: http://github.com/Mirmu/ParalogMatching.jl/LICENCE.md
+
 # Very useful function that classifies elements along with their counts in a given set
 function tally(list)
     slist = sort(list)
