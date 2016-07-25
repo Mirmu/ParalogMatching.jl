@@ -161,3 +161,21 @@ function run_matching(X12::HarmonizedAlignments;
     #return X1, X2, match, freq, corr, invC, savematch
     return match
 end
+
+function paralog_matching(infile1::AbstractString,
+			  infile2::AbstractString,
+			  outfile::AbstractString;
+			  cutoff::Integer = 500,
+			  batch::Integer = 1,
+			  strategy::AbstractString = "covariation",
+			  lpsolver::Union{MathProgBase.SolverInterface.AbstractMathProgSolver,Void} = nothing)
+
+    X1 = read_fasta_alignment(infile1)
+    X2 = read_fasta_alignment(infile2)
+
+    X12 = ParaMatch.prepare_alignments(X1, X2, cutoff=cutoff)
+    match = ParaMatch.run_matching(X12, batch=batch, strategy=strategy, lpsolver=lpsolver)
+
+    rewrite_fasta_match(X12.X1, X12.X2, match, outfile)
+    println("done")
+end
