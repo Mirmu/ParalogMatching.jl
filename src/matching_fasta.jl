@@ -1,12 +1,12 @@
 ########################## PRE PROCESSING THE MATCHING ##############################
 
 # Applies cutoffs, harmonizes alignments
-function prepare_alignments(Xi1::Alignment, Xi2::Alignment, cut::Integer = 500)
-    cut == 0 && (cut = typemax(Int))
+function prepare_alignments(Xi1::Alignment, Xi2::Alignment; cutoff::Integer = 500)
+    cutoff == 0 && (cutoff = typemax(Int))
     println("initializing the matching",
-	    cut < typemax(Int) ? ", removing families larger than $cut" : "",
+	    cutoff < typemax(Int) ? ", removing families larger than $cutoff" : "",
 	    "...")
-    return harmonize_fasta(order_and_cut(Xi1, cut), order_and_cut(Xi2, cut))
+    return harmonize_fasta(order_and_cut(Xi1, cutoff), order_and_cut(Xi2, cutoff))
 end
 
 # Returns the initial matching between single species
@@ -57,11 +57,12 @@ function initialize_matching(X12::HarmonizedAlignments)
     return X1, X2, match, freq, corr, invC
 end
 
-# par_corr gathers for each species in specl, the matching obtained by the "strat" strategy
+# par_corr gathers for each species in specl, the matching obtained by the "strategy" strategy
 # And returns an array of those matchings
 function par_corr(X1::Alignment, X2::Alignment, freq::FreqC, invC::Matrix{Float64},
-		  specl::Vector{Int}, strat::AbstractString)
-    return [give_correction(X1, X2, freq, invC, i, strat) for i in specl]
+		  specl::Vector{Int}, strategy::AbstractString,
+		  lpsolver::MathProgBase.SolverInterface.AbstractMathProgSolver)
+    return [give_correction(X1, X2, freq, invC, i, strategy, lpsolver) for i in specl]
 end
 
 # spec_entropy computes the number of potential matchings for each species
@@ -106,19 +107,25 @@ end
 
 # The main function that runs the matching
 # Works for harmonized Fasta
-# options "strat" for the matching are :
+# options "strategy" for the matching are :
 #   "covariation": computes the matching from co evolution signal
 #   "genetic":     computes the matching from genetic proximity (if FASTA contains genetic position info)
 #   "random":      computes a random matching for null hypothesis
 #   "greedy":      computes a matching from a greedy strategy with the co evolution signal
 # the argument "a" should be the output of the initialize function that can be found in Fasta_Manip.jl
 
-function run_matching(X12::HarmonizedAlignments, batch::Integer = 1; strat::AbstractString = "covariation")
+function run_matching(X12::HarmonizedAlignments;
+		      batch::Integer = 1,
+		      strategy::AbstractString = "covariation",
+		      lpsolver::Union{MathProgBase.SolverInterface.AbstractMathProgSolver,Void} = nothing)
+
     X1, X2, match, freq, corr, invC = initialize_matching(X12)
 
     valid_strats = ["covariation", "genetic", "random", "greedy"]
-    strat ∈ valid_strats ||
-	throw(ArgumentError("unknown strategy: $strat. Must be one of: $(join(valid_strats, ", ", " or "))"))
+    strategy ∈ valid_strats ||
+	throw(ArgumentError("unknown strategy: $strategy. Must be one of: $(join(valid_strats, ", ", " or "))"))
+
+    lpsolver ≡ nothing && (lpsolver = MathProgBase.defaultLPsolver)
 
     # Computes the entropy of the families and batch them from easiest to hardest
     spec = spec_entropy(X1, X2)
@@ -132,7 +139,7 @@ function run_matching(X12::HarmonizedAlignments, batch::Integer = 1; strat::Abst
 	isempty(el) && continue
 
 	# Performs the matching for each species of the batch
-	res = par_corr(X1, X2, freq, invC, el, strat)
+	res = par_corr(X1, X2, freq, invC, el, strategy, lpsolver)
 	println("batch of species")
 	println(el)
 	println(res)
@@ -140,7 +147,7 @@ function run_matching(X12::HarmonizedAlignments, batch::Integer = 1; strat::Abst
 	# Applies the matching to the global matching vector
 	apply_matching!(X1, X2, match, el, res)
 
-	if strat == "covariation" || strat == "greedy"
+	if strategy == "covariation" || strategy == "greedy"
 	    println("Recomputing the model")
 	    # Updates the freq and corr matrices, and its inverse
 	    unitFC!(X1, X2, match, el, freq)

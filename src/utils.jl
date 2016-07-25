@@ -201,7 +201,8 @@ end
 
 # This function takes alignments, priors matrices and ONE spec, and computes the matching following various strategies
 # The helpers for the strategies are below
-function give_correction(X1, X2, freq::FreqC, invC::Matrix{Float64}, spec::Int, strat::AbstractString)
+function give_correction(X1, X2, freq::FreqC, invC::Matrix{Float64}, spec::Int, strategy::AbstractString,
+                         solver::MathProgBase.SolverInterface.AbstractMathProgSolver)
     @extract X1 : spec1=spec_id Z1=Z N1=N s=q-1
     @extract X2 : spec2=spec_id Z2=Z N2=N
     @extract freq : M Pi
@@ -212,11 +213,11 @@ function give_correction(X1, X2, freq::FreqC, invC::Matrix{Float64}, spec::Int, 
     #solver = GurobiSolver(OutputFlag=false)
     #solver = ClpSolver()
     #solver = GLPKSolverLP()
-    solver = MathProgBase.defaultLPsolver # TODO: allow choosing the solver
+    #solver = MathProgBase.defaultLPsolver # TODO: allow choosing the solver
     #solver = MathProgBase.defaultMIPsolver # TODO: allow choosing the solver
 
     # First covariation/greedy strategy
-    if strat ∈ ("covariation", "greedy")
+    if strategy ∈ ("covariation", "greedy")
         ind1 = find(spec1 .== spec)
         ind2 = find(spec2 .== spec)
 
@@ -234,12 +235,12 @@ function give_correction(X1, X2, freq::FreqC, invC::Matrix{Float64}, spec::Int, 
         # the cost function as the matching algorithm wants it
         cost = (Zb1-vmean1) * invC[r1,r2] * (Zb2-vmean2)'
 
-        if strat == "covariation"
+        if strategy == "covariation"
             # Compute the matching via linear programming
             rematch = mpbmatch(cost, solver)
             # and finally the result is converted to a matching
             permres = convert_perm_mat(rematch)
-        elseif strat == "greedy"
+        elseif strategy == "greedy"
             # Compute the matching using a greedy heuristic
             permres = greedy_from_cost(cost)
         else
@@ -247,7 +248,7 @@ function give_correction(X1, X2, freq::FreqC, invC::Matrix{Float64}, spec::Int, 
         end
 
     # Genetic matching strategy by genetic distance
-    elseif strat == "genetic"
+    elseif strategy == "genetic"
         # computes the genetic distance between sequences and returns the matching
         cost = cost_from_annot(X1, X2, spec)
         rematch = mpbmatch(cost, solver)
@@ -255,7 +256,7 @@ function give_correction(X1, X2, freq::FreqC, invC::Matrix{Float64}, spec::Int, 
         permres = filter_gen_dist(convert_perm_mat(rematch), cost)
 
     # Random matching to test null hypothesis
-    elseif strat == "random"
+    elseif strategy == "random"
         ind1 = find(spec1 .== spec)
         ind2 = find(spec2 .== spec)
         mini = min(length(ind1), length(ind2))
