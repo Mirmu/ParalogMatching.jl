@@ -123,7 +123,7 @@ function run_matching(X1::Alignment, X2::Alignment, batch::Integer = 1; strat::A
     len = length(spec)
     batchl = [spec[i*batch+1:min((i+1)*batch, len)] for i in 0:div(len, batch)]
 
-    savematch = Tuple{Vector{Int64},Vector{Int64}}[]
+    #savematch = Tuple{Vector{Int64},Vector{Int64}}[]
 
     # For each batch...
     for el in batchl
@@ -146,8 +146,9 @@ function run_matching(X1::Alignment, X2::Alignment, batch::Integer = 1; strat::A
 	end
 
 	# Takes a snapshot of the matching being built
-	push!(savematch, (deepcopy(match), deepcopy(freq.specs)))
+	#push!(savematch, (deepcopy(match), deepcopy(freq.specs)))
     end
     clear_inverse_mem()
-    return X1, X2, match, freq, corr, invC, savematch
+    #return X1, X2, match, freq, corr, invC, savematch
+    return match
 end
