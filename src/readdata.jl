@@ -79,7 +79,7 @@ function specname(s::ASCIIString, header_regex::Union{Void,Regex} = nothing)
         regex_uniprot = r"^(?:(?:(?:[^|/_]+?\|){2})|(?:[^|/_]+?/))([^|/_]+?)_([^|/_\s]+)"
 
         regex_oldskrr = r"\[(.*?)\]"
-        regex_joined = r"^(.*?)with(.*?)/(.*)$"
+        regex_joined = r"^(.*?)::(.*?)/(.*)$"
 
         # standard format
         if ismatch(regex_uniprot, s)

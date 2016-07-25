@@ -76,7 +76,7 @@ function rewrite_fasta_match(X1::Alignment, X2::Alignment, match::Vector{Int}, n
 	for (i,edge) in enumerate(match)
 	    edge == 0 && continue
 	    X1.spec_name[i] == X2.spec_name[edge] || error("do you have a well formed match ?")
-	    h = string(">", X1.uniprot_id[i], "with", X2.uniprot_id[edge], "/", X1.spec_name[i])
+	    h = string(">", X1.uniprot_id[i], "::", X2.uniprot_id[edge], "/", X1.spec_name[i])
 	    write(f, h)
 	    write(f, X1.sequence[i])
 	    write(f, X2.sequence[edge])
