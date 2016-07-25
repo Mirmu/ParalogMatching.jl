@@ -7,6 +7,8 @@ using ArgParse
 function main()
     s = ArgParseSettings("Match paralog species based on co-evolution signals.")
 
+    valid_strats = ["covariation", "genetic", "random", "greedy"]
+
     @add_arg_table s begin
         "--cutoff", "-c"
             arg_type = Int
@@ -21,6 +23,10 @@ function main()
             range_tester = (x->x≥1)
             help = """batch size, i.e. number of species to match before updating
                       the underlying alignment model (lower is more accurate but slower)"""
+        "--strategy", "-s"
+            default = "covariation"
+            range_tester = (s->s ∈ valid_strats)
+            help = "matching strategy. Allowed strategies are: $(join(valid_strats, ", ", " and "))."
         "infile1"
             help = "first input alignment"
             required = true
