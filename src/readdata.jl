@@ -82,60 +82,25 @@ function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float6
 end
 
 function specname(s::ASCIIString)
-    regex1 = r"\[(.*?)\]"
-    regex2 = r"^([A-Z0-9]*?)_([A-Z0-9]*?)/"
+    regex1 = r"^(?:(?:(?:[^|/_]+?\|){2})|(?:[^|/_]+?/))([^|/_]+?)_([^|/_\s]+)"
+
+    regex2 = r"\[(.*?)\]"
     regex3 = r"^(.*?)with(.*?)/(.*)$"
-    regex4 = r"^([^/_]+?)/[^/_]+?_([^/_]+?)$"
 
     if ismatch(regex1, s)
-        spec_name = match(regex1, s).captures[1]
-        uniprot_id = "000000"
-    elseif ismatch(regex2, s)
         uniprot_id, spec_name = match(regex1, s).captures
+
+    # custom internal formats
+    elseif ismatch(regex2, s)
+        spec_name = match(regex2, s).captures[1]
+        uniprot_id = "000000"
     elseif ismatch(regex3, s)
         spec_name = match(regex3, s).captures[3]
         uniprot_id = "000000"
-    elseif ismatch(regex4, s)
-        uniprot_id, spec_name = match(regex4, s).captures
     else
         error("unrecognized spec string: $s")
     end
     return convert(ASCIIString, uniprot_id), convert(ASCIIString, spec_name)
-end
-
-function specname_OLD(s::ASCIIString)
-    if ismatch(r"\[(.*?)\]", s)
-        spec_name = convert(ASCIIString, match(r"\[(.*?)\]", s).captures[1])
-        uniprot_id="000000"
-        return (uniprot_id, spec_name)
-    elseif ismatch(r"^([A-Z,0-9].*?)\_([A-Z,0-9].*?)/", s)
-        uniprot_id, spec_name = match(r"^([A-Z,0-9].*?)\_([A-Z,0-9].*?)/", s).captures
-        return (convert(ASCIIString, uniprot_id), convert(ASCIIString, spec_name))
-    elseif ismatch(r"^(.*?)with(.*?)/(.*?)$", s)
-        spec_name = convert(ASCIIString, match(r"^(.*?)with(.*?)/(.*?)$", s).captures[3])
-        uniprot_id= "000000"
-        return (uniprot_id, spec_name)
-    end
-
-    n = length(s)
-    i1 = -1
-    i2 = -1
-    flag1 = 0
-    flag2 = 0
-    for i = 1:length(s)
-        if s[i] == '/'
-            i1 = i
-            flag1 == 1 && error("badly formed string")
-            flag1 = 1
-        elseif s[i] == '_'
-            i2 = i
-            flag2 == 1 && error("badly formed string")
-            flag2 = 1
-        end
-    end
-    i1 < 0 || i2 < 0 && error("badly formed string")
-
-    return (s[1:i1-1], s[i2+1:end])
 end
 
 function compute_spec(header::Vector{ASCIIString})
