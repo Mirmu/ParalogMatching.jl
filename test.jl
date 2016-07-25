@@ -1,4 +1,4 @@
-include("src/ParaMatch.jl")
+include("src/ParalogMatching.jl")
 
 using Gurobi
 

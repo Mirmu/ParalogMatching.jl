@@ -1,4 +1,4 @@
-module ParaMatch
+module ParalogMatching
 
 using FastaIO, ExtractMacro, Iterators, Compat
 using Distributions

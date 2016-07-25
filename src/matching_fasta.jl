@@ -173,8 +173,8 @@ function paralog_matching(infile1::AbstractString,
     X1 = read_fasta_alignment(infile1)
     X2 = read_fasta_alignment(infile2)
 
-    X12 = ParaMatch.prepare_alignments(X1, X2, cutoff=cutoff)
-    match = ParaMatch.run_matching(X12, batch=batch, strategy=strategy, lpsolver=lpsolver)
+    X12 = prepare_alignments(X1, X2, cutoff=cutoff)
+    match = run_matching(X12, batch=batch, strategy=strategy, lpsolver=lpsolver)
 
     rewrite_fasta_match(X12.X1, X12.X2, match, outfile)
     println("done")
