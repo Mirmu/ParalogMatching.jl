@@ -3,7 +3,7 @@ repo_url:         https://github.com/Mirmu/ParalogMatching.jl
 site_description: Julia package ParalogMAtching.jl
 site_author:      Carlo Baldassi, Thomas Gueudre, Andrea Pagnani
 
-theme: yeti
+theme: flatly
 
 extra_css:
   - assets/Documenter.css

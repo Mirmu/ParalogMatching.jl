@@ -1,5 +1,5 @@
 Julia ParalogMatching package
-Copyright (C) 2016 Carlo Baldassi, Thomas Gueudre and Andrea Pagnani
+Copyright (C) 2016 Carlo Baldassi, Thomas Gueudré and Andrea Pagnani
 (the "Authors").
 All Rights Reserved.
 

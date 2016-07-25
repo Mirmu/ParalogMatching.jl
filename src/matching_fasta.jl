@@ -211,6 +211,8 @@ This function performs the paralog matching from two given FASTA files containin
 two different protein families. When the matching is done, it writes the result in a new FASTA file,
 in which each sequence is the concatenation of two mathing sequences in the original file.
 
+The input format is standard FASTA, but the headers are parsed as explained in [`prepare_alignments`](@ref).
+
 The output file format is documented in [`write_fasta_match`](@ref).
 
 The keyword arguments are documented in [`prepare_alignments`](@ref) and [`run_matching`](@ref).
