@@ -1,5 +1,29 @@
 # This file is a part of ParalogMatching.jl. License is GPL3+: http://github.com/Mirmu/ParalogMatching.jl/LICENCE.md
 
+
+"""
+    read_fasta_alignment(filename, max_gap_fraction=1.0; header_regex=nothing)
+
+Parse a (possibly gzipped) FASTA file, converting it into an alignment which can be used
+in the Gaussian model used by ParalogMatching. Optionally, discards the sequences which
+have more than a fraction `max_gap_fraction` of missing values (gaps) in the alignment.
+
+The function automatically tries to parse the species names and the Uniprot ID, using
+a standard format specification. The species names are then used in the matching procedure;
+the Uniprot IDs are only used for writing the output file.
+
+You can parse arbitrary files by providing a custom `header_regex`, in which case it needs
+to have exactly two capture groups, the first one returning the Uniprot ID and the second the
+species name. For example, if the headers in your FASTA file look like this:
+
+```
+>SOMELOCATION/SOMESPECIES/OTHERINFO
+```
+
+then you can use a regex like this one: `read_fasta_alignment(..., header_regex=r"^([^/]+)/([^/]+)/")`,
+i.e. line start, anything except a slash (captured), followed by a slash, then anything except a slash
+(captured), then a slash.
+"""
 function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float64 = 1.0; header_regex::Union{Void,Regex} = nothing)
     f = FastaReader(filename)
 

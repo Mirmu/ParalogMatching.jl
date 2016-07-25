@@ -3,6 +3,18 @@
 ########################## PRE PROCESSING THE MATCHING ##############################
 
 # Applies cutoffs, harmonizes alignments
+"""
+    prepare_alignments(X1::Alignment, X2::Alignment; cutoff::Integer = 500)
+
+Prepares two alignments (as returned by [`read_fasta_alignment`](@ref)) and returns
+a "harmonized alignment" object, containing two new alignments in which only the
+sequences belonging to species which exist in both alignments are kept, and which
+is ready to be passed to [`run_matching`](@ref).
+
+The `cutoff` keyword argument can be used to discard all species for which there
+are more than a certain number of sequences in the alignment. Use `0` to disable this
+filter entirely.
+"""
 function prepare_alignments(Xi1::Alignment, Xi2::Alignment; cutoff::Integer = 500)
     cutoff == 0 && (cutoff = typemax(Int))
     println("initializing the matching",
@@ -116,6 +128,40 @@ end
 #   "greedy":      computes a matching from a greedy strategy with the co evolution signal
 # the argument "a" should be the output of the initialize function that can be found in Fasta_Manip.jl
 
+"""
+    run_matching(X12::HarmonizedAlignments;
+		 batch = 1,
+		 strategy = "covariation",
+		 lpsolver = nothing)
+
+Returns the matching of the two alignments contained in `X12`, which need to be obtained by [`prepare_alignments`](@ref).
+The returned matching is a Vector in which the entry `i` determines which sequence of the second alignment
+is the partner to sequence `i` in the first alignment.
+
+The keywords are:
+
+* `batch`: how many species should be matched before updating the underlying model; smaller values give
+           better results but increase the computational time
+
+* `strategy`: the strategy to use when computing the matching. See below.
+
+* `lpsolver`: linear programming solver used when performing the matching with the `"covariation"` strategy.
+	      The default (`nothing`) uses the default solver as detected automatically by `MathProgBase`.
+	      You can override this by passing e.g. `lpsolver = GurobiSolver(OutputFlag=false)` or similar
+	      (see the documentation for `MathProgBase`).
+
+Available strategies are:
+
++ `"covariation"`: uses the Gaussian model and performs a matching on the scores (default).
+
++ `"greedy"`: same as `"covariation"` but performs a greedy matching.
+
++ `"random"`: produces a rendom matching, only useful to produce null models.
+
++ `"genetic"`: tries to use the Uniprot ID information to determine which sequences belong to the
+	       same operon (only used for testing, not a valid general strategy)
+
+"""
 function run_matching(X12::HarmonizedAlignments;
 		      batch::Integer = 1,
 		      strategy::AbstractString = "covariation",
@@ -164,6 +210,26 @@ function run_matching(X12::HarmonizedAlignments;
     return match
 end
 
+"""
+    paralog_matching(infile1::AbstractString, infile2::AbstractString, outfile::AbstractString;
+		     cutoff = 500,
+		     batch = 1,
+		     strategy = "covariation",
+		     lpsolver = nothing)
+
+A function to perform the paralog matching from two given FASTA files containing alignments for
+two different protein families. When the matching is done, it writes the result in a new FASTA file,
+in which each sequence is the concatenation of two mathing sequences in the original file.
+
+The sequences headers in the output file have the format `>ID1::ID2/SPECIES`, where `ID1` represents
+the ID read from the first alignment, `ID2` that for the second alignment, and `SPECIES` is the species
+name.
+
+The keyword arguments are documented in [`prepare_alignments`](@ref) and [`run_matching`](@ref).
+
+This function also returns the harmonized alignemnt (produced by [`prepare_alignments`](@ref)) and
+the resulting match (as returned by [`run_matching`](@ref)).
+"""
 function paralog_matching(infile1::AbstractString,
 			  infile2::AbstractString,
 			  outfile::AbstractString;
@@ -179,5 +245,8 @@ function paralog_matching(infile1::AbstractString,
     match = run_matching(X12, batch=batch, strategy=strategy, lpsolver=lpsolver)
 
     rewrite_fasta_match(X12.X1, X12.X2, match, outfile)
+
     println("done")
+
+    return X12, match
 end
