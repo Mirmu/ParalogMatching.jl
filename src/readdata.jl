@@ -14,7 +14,7 @@ end
 
 Base.(:(==))(X1::Alignment, X2::Alignment) = all(fn->getfield(X1, fn) == getfield(X2, fn), fieldnames(Alignment))
 
-function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float64 = 1.0)
+function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float64 = 1.0; header_regex::Union{Void,Regex} = nothing)
     f = FastaReader(filename)
 
     # pass 1
@@ -76,41 +76,53 @@ function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float6
 
     close(f)
 
-    spec_id, spec_name, uniprot_id = compute_spec(header)
+    spec_id, spec_name, uniprot_id = compute_spec(header, header_regex)
 
     return Alignment(size(Z, 1), size(Z, 2), Int(maximum(Z)), Z', sequence, header, spec_name, spec_id, uniprot_id)
 end
 
-function specname(s::ASCIIString)
-    regex1 = r"^(?:(?:(?:[^|/_]+?\|){2})|(?:[^|/_]+?/))([^|/_]+?)_([^|/_\s]+)"
-
-    regex2 = r"\[(.*?)\]"
-    regex3 = r"^(.*?)with(.*?)/(.*)$"
-
-    if ismatch(regex1, s)
-        uniprot_id, spec_name = match(regex1, s).captures
-
-    # custom internal formats
-    elseif ismatch(regex2, s)
-        spec_name = match(regex2, s).captures[1]
-        uniprot_id = "000000"
-    elseif ismatch(regex3, s)
-        spec_name = match(regex3, s).captures[3]
-        uniprot_id = "000000"
+function specname(s::ASCIIString, header_regex::Union{Void,Regex} = nothing)
+    if header_regex ≢ nothing
+        # user-defined format
+        if ismatch(header_regex)
+            captures = match(header_regex, s).captures
+            length(captures) == 2 || error("Invalid header regex: should always return 2 captured groups if it matches; has returned: $(length(captures))")
+            uniprot_id, spec_name = captures
+        else
+            error("unrecognized spec string: $s")
+        end
     else
-        error("unrecognized spec string: $s")
+        regex_uniprot = r"^(?:(?:(?:[^|/_]+?\|){2})|(?:[^|/_]+?/))([^|/_]+?)_([^|/_\s]+)"
+
+        regex_oldskrr = r"\[(.*?)\]"
+        regex_joined = r"^(.*?)with(.*?)/(.*)$"
+
+        # standard format
+        if ismatch(regex_uniprot, s)
+            uniprot_id, spec_name = match(regex_uniprot, s).captures
+
+        # custom internal formats
+        elseif ismatch(regex_oldskrr, s)
+            spec_name = match(regex_oldskrr, s).captures[1]
+            uniprot_id = "000000"
+        elseif ismatch(regex_joined, s)
+            spec_name = match(regex_joined, s).captures[3]
+            uniprot_id = "000000"
+        else
+            error("unrecognized spec string: $s")
+        end
     end
     return convert(ASCIIString, uniprot_id), convert(ASCIIString, spec_name)
 end
 
-function compute_spec(header::Vector{ASCIIString})
+function compute_spec(header::Vector{ASCIIString}, header_regex::Union{Void,Regex} = nothing)
     M = length(header)
 
     spec_name = Array{ASCIIString}(M)
     uniprot_id  = Array{ASCIIString}(M)
 
     for i = 1:M
-        uniprot_id[i], spec_name[i] = specname(header[i])
+        uniprot_id[i], spec_name[i] = specname(header[i], header_regex)
     end
 
     specunique = unique(spec_name)
