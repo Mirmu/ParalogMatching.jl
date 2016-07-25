@@ -25,6 +25,8 @@ function harmonize_fasta(X1::Alignment, X2::Alignment)
     us2 = unique(spec_name2)
     kept = intersect(us1, us2)
 
+    isempty(kept) && error("No species in common found in the alignments")
+
     kd = [s=>i for (i,s) in enumerate(kept)] # associate an index to each kept species
 
     ind1, sid1 = compute_new_inds(spec_name1, kd)
