@@ -47,7 +47,7 @@ end
 # Initializes the problem from the output of prepare_alignments,
 # allocating frequency matrix and correlation matrices, inverting
 # them and returning them
-function initialize_matching(X12::HarmonizedAlignments,pseudo_count::Float64)
+function initialize_matching(X12::HarmonizedAlignments, pseudo_count::Float64)
     @extract X12 : X1 X2
 
     # Match by uniqueness
@@ -135,7 +135,8 @@ The keywords are:
 
 * `strategy`: the strategy to use when computing the matching. See below.
 
-* `pseudo_count`: gives the amount of regularization used for the inversion of the correlation matrix. A defaut of 0.8 gives sensible results.
+* `pseudo_count`: gives the amount of regularization used for the inversion of the correlation matrix.
+                  A defaut of 0.8 gives sensible results.
 
 * `lpsolver`: linear programming solver used when performing the matching with the `"covariation"` strategy.
 	      The default (`nothing`) uses the default solver as detected automatically by `MathProgBase`.
@@ -156,11 +157,11 @@ Available strategies are:
 """
 function run_matching(X12::HarmonizedAlignments;
 		      batch::Integer = 1,
-		      pseudo_count::Float64=0.8,
+		      pseudo_count::Float64 = 0.8,
 		      strategy::AbstractString = "covariation",
 		      lpsolver::Union{MathProgBase.SolverInterface.AbstractMathProgSolver,Void} = nothing)
 
-    X1, X2, match, freq, corr, invC = initialize_matching(X12,pseudo_count)
+    X1, X2, match, freq, corr, invC = initialize_matching(X12, pseudo_count)
 
     valid_strats = ["covariation", "genetic", "random", "greedy"]
     strategy ∈ valid_strats ||
