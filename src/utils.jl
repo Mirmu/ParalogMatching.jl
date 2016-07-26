@@ -44,7 +44,7 @@ end
 ##################### HELPERS FOR THE MATCHING PROBLEM ################################
 
 # Gets both the lines of alignments matched for a given list of specs
-function get_edges(X1, X2, match, specs::Vector{Int64})
+function get_edges(X1, X2, match, specs::Vector{Int})
     ind = find([a in specs for a in X1.spec_id])
     filter!(x->match[x]!=0, ind)
     return ind, match[ind]
@@ -306,7 +306,7 @@ end
 
 
 # Adds a pseudo count with Mfake sequences
-function add_pseudocount!(freq::FreqC, Mfake::Int64)
+function add_pseudocount!(freq::FreqC, Mfake::Int)
     Mfake != 0 || return
 
     @extract freq : Pi Pij M specs q
@@ -366,8 +366,8 @@ function cost_from_annot(X1, X2, spec)
 end
 
 function filter_gen_dist(match, cost)
-    res1 = Int64[]
-    res2 = Int64[]
+    res1 = Int[]
+    res2 = Int[]
 
     #println(collect(zip(match...)))
 
@@ -382,8 +382,8 @@ end
 function greedy_from_cost(mat)
     len1, len2 = size(mat)
     count = 0
-    perm1 = Int64[]
-    perm2 = Int64[]
+    perm1 = Int[]
+    perm2 = Int[]
     rank = 1
 
     while count < min(len1, len2)
@@ -399,7 +399,7 @@ function greedy_from_cost(mat)
 end
 
 # Finds the MINIMUM of a matrice and returns the index
-function findnth_mat(A::Matrix{Float64}, rank::Int64)
+function findnth_mat(A::Matrix{Float64}, rank::Int)
     ls = sortperm(A[:])
     i, j = ind2sub(size(A), ls[rank])
     return i, j

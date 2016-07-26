@@ -87,7 +87,7 @@ function spec_entropy(X1::Alignment, X2::Alignment)
     bib1 = tally(spec_id1)
     bib2 = tally(spec_id2)
 
-    entropy = Tuple{Int64,Float64}[]
+    entropy = Tuple{Int,Float64}[]
 
     for i in 1:length(bib1)
 	bib1[i][1] == bib2[i][1] || error("non harmonized fasta")
@@ -170,7 +170,7 @@ function run_matching(X12::HarmonizedAlignments;
     len = length(spec)
     batchl = [spec[i*batch+1:min((i+1)*batch, len)] for i in 0:div(len, batch)]
 
-    #savematch = Tuple{Vector{Int64},Vector{Int64}}[]
+    #savematch = Tuple{Vector{Int},Vector{Int}}[]
 
     # For each batch...
     for el in batchl

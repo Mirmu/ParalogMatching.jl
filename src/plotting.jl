@@ -167,8 +167,8 @@ function trim_cov_match(nameX1, nameX2, namematch, prop, nameoutput)
     retsor = sort(vcat(ret...), by=x->x[2])
     len = length(retsor)
     propo = round(Int, prop * len)
-    edges1 = Int64[a[1][1] for a in retsor[1:propo]]
-    edges2 = Int64[a[1][2] for a in retsor[1:propo]]
+    edges1 = Int[a[1][1] for a in retsor[1:propo]]
+    edges2 = Int[a[1][2] for a in retsor[1:propo]]
     nuovomatch = zeros(X1.M)
     nuovomatch[edges1] = edges2
 

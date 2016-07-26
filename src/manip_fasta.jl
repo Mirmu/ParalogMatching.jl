@@ -6,7 +6,7 @@
 function order_and_cut(Xtot::Alignment, cutoff::Integer)
     @extract Xtot : spec_name N q Z sequence uniprot_id spec_id header
     cand = tally_backref(spec_name)
-    kept = Int64[]
+    kept = Int[]
     # Orders so that families have contiguous sequences organized in blocks
     for (fam,n,inds) in cand
 	n > cutoff && continue

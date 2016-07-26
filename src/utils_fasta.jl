@@ -5,7 +5,7 @@ function tally(list)
     slist = sort(list)
     counter = 0
     comp = slist[1]
-    tallist = Tuple{eltype(list),Int64}[]
+    tallist = Tuple{eltype(list),Int}[]
 
     for el in slist
 	if el == comp
@@ -27,7 +27,7 @@ function tally_backref(list)
     counter = 0
     comp = slist[1]
     inds = Int[]
-    tallist = Tuple{eltype(list),Int64,Vector{Int}}[]
+    tallist = Tuple{eltype(list),Int,Vector{Int}}[]
 
     for (i,el) in zip(p,slist)
 	if el == comp
@@ -47,7 +47,7 @@ end
 # Returns the indexes of the list that have unique labels
 # WARNING!: works only for sorted lists
 function index_of_unique(list)
-    ind = Int64[]
+    ind = Int[]
     L = length(list)
     L == 0 && return ind
 
