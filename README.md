@@ -20,8 +20,8 @@ co-evolution signal. Such maximization is performed over the Bayesian inference 
 Gaussian model, by inverting the correlation matrix.
 
 The code is written in [Julia](http://julialang.org), and the functions are called
-from within Julia. However, a [command-line interface](@ref CLI) is also provided for
-those unfamiliar with the language.
+from within Julia. However, a command-line interface is also provided for
+those unfamiliar with the language (see the documentation).
 
 The current code was tested on Julia versions 0.4 and 0.5.
 
