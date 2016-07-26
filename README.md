@@ -30,7 +30,7 @@ The current code was tested on Julia versions 0.4 and 0.5.
 The package is not registered; it can be installed with `Pkg.clone`:
 
 ```
-julia> Pkg.clone("https:////github.com/Mirmu/ParalogMatching.jl")
+julia> Pkg.clone("https://github.com/Mirmu/ParalogMatching.jl")
 ```
 
 Dependencies will be installed automatically.
