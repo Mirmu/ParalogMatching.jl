@@ -125,7 +125,7 @@
 </code></pre>
 
 <p>Dependencies will be installed automatically.</p>
-<p>However, you will also need to install at least one linear programming solver supported by <a href="http://mathprogbasejl.readthedocs.io/en/latest/">MathProgBase</a>. See the list of available solvers at the <a href="http://www.juliaopt.org/#packages">JuliaOpt page</a>. Note that the solver efficiency is not particularly important for paralog matching, whose computational time is dominated by matrix inversion operations, therefore you don't need a particularly fast solver. If unsure, use <code>Pkg.add("Clp")</code> or <code>Pkg.add("GLPKMathProgBase")</code>, which are free and open-source solvers.</p>
+<p>However, you will also need to install at least one linear programming solver supported by <a href="http://mathprogbasejl.readthedocs.io/en/latest/">MathProgBase</a>. See the list of available solvers at the <a href="http://www.juliaopt.org/#packages">JuliaOpt page</a>. Note that the solver efficiency is not particularly important for paralog matching, whose computational time is dominated by matrix inversion operations, therefore you don't need a particularly fast solver. If unsure, use <code>Pkg.add("Clp")</code> or <code>Pkg.add("GLPKMathProgInterface")</code>, which are free and open-source solvers.</p>
 <p><a id='Usage-1'></a></p>
 <h3 id="usage">Usage</h3>
 <p>The module is loaded as any other Julia module:</p>
