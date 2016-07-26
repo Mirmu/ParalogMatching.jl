@@ -40,7 +40,7 @@ However, you will also need to install at least one linear programming solver su
 See the list of available solvers at the [JuliaOpt page](http://www.juliaopt.org/#packages).
 Note that the solver efficiency is not particularly important for paralog matching, whose computational time
 is dominated by matrix inversion operations, therefore you don't need a particularly fast solver. If unsure,
-use `Pkg.add("Clp")` or `Pkg.add("GLPKMathProgBase")`, which are free and open-source solvers.
+use `Pkg.add("Clp")` or `Pkg.add("GLPKMathProgInterface")`, which are free and open-source solvers.
 
 ## Documentation
 
