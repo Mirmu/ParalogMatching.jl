@@ -4,7 +4,7 @@
 |:---------------------------------------:|:-----------------------------------------------------------------------------------------------:|
 | [![][docs-latest-img]][docs-latest-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] [![][codecov-img]][codecov-url] |
 
-This module implements the paralog matching technique presented in the paper
+This package implements the paralog matching technique presented in the paper
 [Simultaneous identification of specifically interacting paralogs and
 inter-protein contacts by Direct-Coupling Analysis](http://arxiv.org/abs/1605.03745)
 by Thomas Gueudré, Carlo Baldassi, Marco Zamparo, Martin Weigt and Andrea Pagnani.
@@ -23,7 +23,7 @@ The code is written in [Julia](http://julialang.org), and the functions are call
 from within Julia. However, a command-line interface is also provided for
 those unfamiliar with the language (see the documentation).
 
-The current code was tested on Julia versions 0.4 and 0.5.
+The package is tested against Julia `0.4` and *current* `0.5-dev` on Linux, OS X, and Windows.
 
 ## Installation
 
@@ -45,10 +45,6 @@ use `Pkg.add("Clp")` or `Pkg.add("GLPKMathProgInterface")`, which are free and o
 ## Documentation
 
 - [**LATEST**][docs-latest-url] &mdash; *in-development version of the documentation.*
-
-## Project Status
-
-The package is tested against Julia `0.4` and *current* `0.5-dev` on Linux, OS X, and Windows.
 
 ## Contributing and Questions
 
