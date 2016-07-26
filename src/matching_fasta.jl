@@ -47,7 +47,7 @@ end
 # Initializes the problem from the output of prepare_alignments,
 # allocating frequency matrix and correlation matrices, inverting
 # them and returning them
-function initialize_matching(X12::HarmonizedAlignments)
+function initialize_matching(X12::HarmonizedAlignments,pseudo_count::Float64)
     @extract X12 : X1 X2
 
     # Match by uniqueness
@@ -64,7 +64,7 @@ function initialize_matching(X12::HarmonizedAlignments)
     unitFC!(X1, X2, match, single, freq)
 
     # Finally compute the inverse of the corr matrix
-    invC = inverse_with_pseudo!(corr, freq, 0.8)
+    invC = inverse_with_pseudo!(corr, freq, pseudo_count)
 
     println("Setup computed")
     return X1, X2, match, freq, corr, invC
@@ -135,6 +135,8 @@ The keywords are:
 
 * `strategy`: the strategy to use when computing the matching. See below.
 
+* `pseudo_count`: gives the amount of regularization used for the inversion of the correlation matrix. A defaut of 0.8 gives sensible results.
+
 * `lpsolver`: linear programming solver used when performing the matching with the `"covariation"` strategy.
 	      The default (`nothing`) uses the default solver as detected automatically by `MathProgBase`.
 	      You can override this by passing e.g. `lpsolver = GurobiSolver(OutputFlag=false)` or similar
@@ -154,10 +156,11 @@ Available strategies are:
 """
 function run_matching(X12::HarmonizedAlignments;
 		      batch::Integer = 1,
+		      pseudo_count::Float64=0.8,
 		      strategy::AbstractString = "covariation",
 		      lpsolver::Union{MathProgBase.SolverInterface.AbstractMathProgSolver,Void} = nothing)
 
-    X1, X2, match, freq, corr, invC = initialize_matching(X12)
+    X1, X2, match, freq, corr, invC = initialize_matching(X12,pseudo_count)
 
     valid_strats = ["covariation", "genetic", "random", "greedy"]
     strategy ∈ valid_strats ||
@@ -169,8 +172,6 @@ function run_matching(X12::HarmonizedAlignments;
     spec = spec_entropy(X1, X2)
     len = length(spec)
     batchl = [spec[i*batch+1:min((i+1)*batch, len)] for i in 0:div(len, batch)]
-
-    #savematch = Tuple{Vector{Int},Vector{Int}}[]
 
     # For each batch...
     for el in batchl
@@ -189,11 +190,9 @@ function run_matching(X12::HarmonizedAlignments;
 	    println("Recomputing the model")
 	    # Updates the freq and corr matrices, and its inverse
 	    unitFC!(X1, X2, match, el, freq)
-	    invC = inverse_with_pseudo!(corr, freq, 0.8)
+	    invC = inverse_with_pseudo!(corr, freq, pseudo_count)
 	end
 
-	# Takes a snapshot of the matching being built
-	#push!(savematch, (deepcopy(match), deepcopy(freq.specs)))
     end
     clear_inverse_mem()
     #return X1, X2, match, freq, corr, invC, savematch
@@ -226,13 +225,14 @@ function paralog_matching(infile1::AbstractString,
 			  cutoff::Integer = 500,
 			  batch::Integer = 1,
 			  strategy::AbstractString = "covariation",
+			  pseudo_count::Float64= 0.8,
 			  lpsolver::Union{MathProgBase.SolverInterface.AbstractMathProgSolver,Void} = nothing)
 
     X1 = read_fasta_alignment(infile1)
     X2 = read_fasta_alignment(infile2)
 
     X12 = prepare_alignments(X1, X2, cutoff=cutoff)
-    match = run_matching(X12, batch=batch, strategy=strategy, lpsolver=lpsolver)
+    match = run_matching(X12, batch=batch, strategy=strategy, pseudo_count=pseudo_count, lpsolver=lpsolver)
 
     write_fasta_match(X12, match, outfile)
 
