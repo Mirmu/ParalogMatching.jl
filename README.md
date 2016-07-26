@@ -56,15 +56,15 @@ Contributions are very welcome, as are feature requests and suggestions. Please 
 [issue][issues-url] if you encounter any problems or would just like to ask a question.
 
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
-[docs-latest-url]: https://carlobaldassi.github.io/ParalogMatching.jl/latest
+[docs-latest-url]: https://Mirmu.github.io/ParalogMatching.jl/latest
 
-[travis-img]: https://travis-ci.org/carlobaldassi/ParalogMatching.jl.svg?branch=master
-[travis-url]: https://travis-ci.org/carlobaldassi/ParalogMatching.jl
+[travis-img]: https://travis-ci.org/Mirmu/ParalogMatching.jl.svg?branch=master
+[travis-url]: https://travis-ci.org/Mirmu/ParalogMatching.jl
 
 [appveyor-img]: https://ci.appveyor.com/api/projects/status/x9jkws1l4xd8q4wy/branch/master?svg=true
-[appveyor-url]: https://ci.appveyor.com/project/carlobaldassi/paralogmatching-jl/branch/master
+[appveyor-url]: https://ci.appveyor.com/project/Mirmu/paralogmatching-jl/branch/master
 
-[codecov-img]: https://codecov.io/gh/carlobaldassi/ParalogMatching.jl/branch/master/graph/badge.svg
-[codecov-url]: https://codecov.io/gh/carlobaldassi/ParalogMatching.jl
+[codecov-img]: https://codecov.io/gh/Mirmu/ParalogMatching.jl/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/Mirmu/ParalogMatching.jl
 
-[issues-url]: https://github.com/carlobaldassi/ParalogMatching.jl/issues
+[issues-url]: https://github.com/Mirmu/ParalogMatching.jl/issues
