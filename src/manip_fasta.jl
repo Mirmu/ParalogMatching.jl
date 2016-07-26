@@ -106,7 +106,7 @@ end
 
 # Computes the intersection of two FASTA files "name1" and "name2", and optionally writes it to a file.
 # If printtofile is false, it simply returns the intersection value, with both lengths of the FASTA.
-function intersaction_fasta(name1::AbstractString, name2::AbstractString; printtofile::Bool = false)
+function intersection_fasta(name1::AbstractString, name2::AbstractString; printtofile::Bool = false)
     X1 = read_fasta_alignment(name1)
     X2 = read_fasta_alignment(name2)
     M1 = X1.M
