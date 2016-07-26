@@ -13,6 +13,10 @@ comprise several species, and each species may have several sequences belonging 
 family. The algorithm tries to associate matching partners from the two families within
 each species.
 
+The underlying main assumption is that the proper matching is the one maximizing the
+co-evolution signal. Such maximization is performed over the Bayesian inference of a
+Gaussian model, by inverting the correlation matrix.
+
 The code is written in [Julia](http://julialang.org), and the functions are called
 from within Julia. However, a [command-line interface](@ref CLI) is also provided for
 those unfamiliar with the language.
@@ -52,7 +56,7 @@ steps of the algorithm.
 A typical run of the algorithm could look like this:
 
 ```
-julia> TrpAB, match = paralog_matching("TrpA.fasta", "TrpB.fasta", "Match_TrpAB.fasta.gz");
+julia> TrpAB, match = paralog_matching("TrpA.fasta", "TrpB.fasta", "Match_TrpAB.fasta.gz", branch=5);
 ```
 
 ## [High-level interface](@id high_level)

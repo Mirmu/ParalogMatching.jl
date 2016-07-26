@@ -1,19 +1,36 @@
-# Matching_Paralogs
-The matching routine for interologs identification based on co-evolution.
+# ParalogMathing.jl
 
-Package for matching paralogs species between two physically interacting proteins, based on their co-evolution signals.
-The underlying main assumption is that the proper matching maximizing the co-evolution signal.
-Such maximization is performed over the Bayesian inference of a Gaussian model, by inverting the correlation matrix.
+| **Documentation**                       | **Build Status**                                                                                |
+|:---------------------------------------:|:-----------------------------------------------------------------------------------------------:|
+| [![][docs-latest-img]][docs-latest-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] [![][codecov-img]][codecov-url] |
 
-More details can be found in:
-CITATION
+This module implements the paralog matching technique presented in the paper
+[Simultaneous identification of specifically interacting paralogs and
+inter-protein contacts by Direct-Coupling Analysis](http://arxiv.org/abs/1605.03745)
+by Thomas Gueudré, Carlo Baldassi, Marco Zamparo, Martin Weigt and Andrea Pagnani.
+
+The main idea of the method is to perform a statistical analysis of two given
+multiple sequence alignments, each containing one protein family. Each familiy should
+comprise several species, and each species may have several sequences belonging to the
+family. The algorithm tries to associate matching partners from the two families within
+each species.
+
+The underlying main assumption is that the proper matching is the one maximizing the
+co-evolution signal. Such maximization is performed over the Bayesian inference of a
+Gaussian model, by inverting the correlation matrix.
+
+The code is written in [Julia](http://julialang.org), and the functions are called
+from within Julia. However, a [command-line interface](@ref CLI) is also provided for
+those unfamiliar with the language.
+
+The current code was tested on Julia versions 0.4 and 0.5.
 
 ## Installation
 
-Use `Pkg.clone`:
+The package is not registered; it can be installed with `Pkg.clone`:
 
 ```
-julia> Pkg.clone("https:////github.com/Mirmu/Matching_Paralogs")
+julia> Pkg.clone("https:////github.com/Mirmu/ParalogMatching.jl")
 ```
 
 Dependencies will be installed automatically.
@@ -25,38 +42,29 @@ Note that the solver efficiency is not particularly important for paralog matchi
 is dominated by matrix inversion operations, therefore you don't need a particularly fast solver. If unsure,
 use `Pkg.add("Clp")` or `Pkg.add("GLPKMathProgBase")`, which are free and open-source solvers.
 
-## Usage
+## Documentation
 
-Given two FASTA files, run the following:
+- [**LATEST**][docs-latest-url] &mdash; *in-development version of the documentation.*
 
-```
-julia> using ParaMatch # NOT REALLY, NEEDS FIXING!!!!!!!!!!!!!!!!!
+## Project Status
 
-julia> X1 = read_fasta_alignment("file1.fasta");
+The package is tested against Julia `0.4` and *current* `0.5-dev` on Linux, OS X, and Windows.
 
-julia> X2 = read_fasta_alignment("file2.fasta");
+## Contributing and Questions
 
-julia> init = initialize_matching(X1, X2);
+Contributions are very welcome, as are feature requests and suggestions. Please open an
+[issue][issues-url] if you encounter any problems or would just like to ask a question.
 
-julia> results = run_matching(init, 5);
-```
+[docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
+[docs-latest-url]: https://carlobaldassi.github.io/ParalogMatching.jl/latest
 
-## Code organization
+[travis-img]: https://travis-ci.org/carlobaldassi/ParalogMatching.jl.svg?branch=master
+[travis-url]: https://travis-ci.org/carlobaldassi/ParalogMatching.jl
 
-The package is organized as follows: in the source folder, routines can be found:
+[appveyor-img]: https://ci.appveyor.com/api/projects/status/x9jkws1l4xd8q4wy/branch/master?svg=true
+[appveyor-url]: https://ci.appveyor.com/project/carlobaldassi/paralogmatching-jl/branch/master
 
-* `readdata.jl` contains the reader for converting FASTA files in Julia types called Alignments
+[codecov-img]: https://codecov.io/gh/carlobaldassi/ParalogMatching.jl/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/carlobaldassi/ParalogMatching.jl
 
-* `manip_fasta.jl` contains all the routines necessary to match the two alignements. Namely it normalizes the names of the species and orders the sequences in contiguous blocks
-
-* `utils_fasta.jl` contains some helpers for the taks of manipulating FASTA
-
-* `types.jl` contains the types used in the optimization/matching procedure
-
-* `utils.jl` contains the routines performing the optimization task for a given species
-
-* `matching_fasta.jl` contains the routines performing the whole matching of both Alignments
-
-* `plotting.jl` contains various scoring/plotting functions to assess the quality of the solution
-
-* `ParaMatch.jl` is a wrapper Module for Julia Package.
+[issues-url]: https://github.com/carlobaldassi/ParalogMatching.jl/issues
