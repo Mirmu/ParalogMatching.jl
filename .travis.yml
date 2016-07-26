@@ -1,0 +1,19 @@
+# Documentation: http://docs.travis-ci.com/user/languages/julia/
+language: julia
+os:
+  - linux
+  - osx
+julia:
+  - release
+  - nightly
+notifications:
+  email: false
+script:
+  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - julia --inline=no -e 'Pkg.clone(pwd()); Pkg.build("ParalogMatching"); Pkg.test("ParalogMatching"; coverage=true)'
+after_success:
+  - julia -e 'Pkg.add("Documenter", v"0.1.4")'
+  - julia -e 'cd(Pkg.dir("ParalogMatching")); include(joinpath("docs", "make.jl"))'
+  - julia -e 'Pkg.add("Coverage", v"0.3")'
+  - julia -e 'cd(Pkg.dir("ParalogMatching")); include(joinpath("docs", "coverage.jl"))'
+
