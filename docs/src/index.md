@@ -10,8 +10,8 @@ by Thomas Gueudré, Carlo Baldassi, Marco Zamparo, Martin Weigt and Andrea Pagna
 The main idea of the method is to perform a statistical analysis of two given
 multiple sequence alignments, each containing one protein family. Each familiy should
 comprise several species, and each species may have several sequences belonging to the
-family. The algorithm tries to associate matching partners from the two families within
-each species.
+family. The algorithm tries to associate (match) interacting partners from the two families
+within each species.
 
 The underlying main assumption is that the proper matching is the one maximizing the
 co-evolution signal. Such maximization is performed over the Bayesian inference of a
