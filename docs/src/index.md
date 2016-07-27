@@ -56,7 +56,7 @@ steps of the algorithm.
 A typical run of the algorithm could look like this:
 
 ```
-julia> TrpAB, match = paralog_matching("TrpA.fasta", "TrpB.fasta", "Match_TrpAB.fasta.gz", branch=5);
+julia> TrpAB, match = paralog_matching("TrpA.fasta", "TrpB.fasta", "Match_TrpAB.fasta.gz", batch=5);
 ```
 
 ## [High-level interface](@id high_level)
