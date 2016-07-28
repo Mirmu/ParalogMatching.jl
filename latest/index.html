@@ -134,7 +134,7 @@
 
 <p>The module provides a <a href=".#high_level-1">high-level interface</a>, with one function which performs all operations and writes a file in output, and the <a href=".#low_level-1">low-level interface</a> functions which perform the single steps of the algorithm.</p>
 <p>A typical run of the algorithm could look like this:</p>
-<pre><code>julia&gt; TrpAB, match = paralog_matching(&quot;TrpA.fasta&quot;, &quot;TrpB.fasta&quot;, &quot;Match_TrpAB.fasta.gz&quot;, branch=5);
+<pre><code>julia&gt; TrpAB, match = paralog_matching(&quot;TrpA.fasta&quot;, &quot;TrpB.fasta&quot;, &quot;Match_TrpAB.fasta.gz&quot;, batch=5);
 </code></pre>
 
 <p><a id='high_level-1'></a></p>
