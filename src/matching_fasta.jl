@@ -136,7 +136,7 @@ The keywords are:
 * `strategy`: the strategy to use when computing the matching. See below.
 
 * `pseudo_count`: gives the amount of regularization used for the inversion of the correlation matrix.
-                  A defaut of 0.8 gives sensible results.
+A defaut of 0.8 gives sensible results, its value cannot be above 1.0.
 
 * `lpsolver`: linear programming solver used when performing the matching with the `"covariation"` strategy.
 	      The default (`nothing`) uses the default solver as detected automatically by `MathProgBase`.
@@ -166,6 +166,7 @@ function run_matching(X12::HarmonizedAlignments;
     valid_strats = ["covariation", "genetic", "random", "greedy"]
     strategy ∈ valid_strats ||
 	throw(ArgumentError("unknown strategy: $strategy. Must be one of: $(join(valid_strats, ", ", " or "))"))
+    pseudo_count>0.0 && (pseudo_count < 1.0) || throw(ArgumentError("invalid value of the pseudo_count, must be a real between 0.0 and 1.0"))
 
     lpsolver ≡ nothing && (lpsolver = MathProgBase.defaultLPsolver)
 
