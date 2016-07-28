@@ -193,7 +193,7 @@
 <p><code>strategy</code>: the strategy to use when computing the matching. See below.</p>
 </li>
 <li>
-<p><code>pseudo_count</code>: gives the amount of regularization used for the inversion of the correlation matrix. A defaut of 0.8 gives sensible results, its value cannot be above 1.0.</p>
+<p><code>pseudo_count</code>: gives the amount of regularization used for the inversion of the correlation matrix. A defaut of 0.5 gives sensible results, its value cannot be above 1.0.</p>
 </li>
 <li>
 <p><code>lpsolver</code>: linear programming solver used when performing the matching with the <code>"covariation"</code> strategy.        The default (<code>nothing</code>) uses the default solver as detected automatically by <code>MathProgBase</code>.        You can override this by passing e.g. <code>lpsolver = GurobiSolver(OutputFlag=false)</code> or similar        (see the documentation for <code>MathProgBase</code>).</p>
