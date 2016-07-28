@@ -136,7 +136,7 @@ The keywords are:
 * `strategy`: the strategy to use when computing the matching. See below.
 
 * `pseudo_count`: gives the amount of regularization used for the inversion of the correlation matrix.
-A defaut of 0.8 gives sensible results, its value cannot be above 1.0.
+A defaut of 0.5 gives sensible results, its value cannot be above 1.0.
 
 * `lpsolver`: linear programming solver used when performing the matching with the `"covariation"` strategy.
 	      The default (`nothing`) uses the default solver as detected automatically by `MathProgBase`.
@@ -157,7 +157,7 @@ Available strategies are:
 """
 function run_matching(X12::HarmonizedAlignments;
 		      batch::Integer = 1,
-		      pseudo_count::Float64 = 0.8,
+		      pseudo_count::Float64 = 0.5,
 		      strategy::AbstractString = "covariation",
 		      lpsolver::Union{MathProgBase.SolverInterface.AbstractMathProgSolver,Void} = nothing)
 
@@ -227,7 +227,7 @@ function paralog_matching(infile1::AbstractString,
 			  cutoff::Integer = 500,
 			  batch::Integer = 1,
 			  strategy::AbstractString = "covariation",
-			  pseudo_count::Float64= 0.8,
+			  pseudo_count::Float64= 0.5,
 			  lpsolver::Union{MathProgBase.SolverInterface.AbstractMathProgSolver,Void} = nothing)
 
     X1 = read_fasta_alignment(infile1)
