@@ -152,3 +152,36 @@ function union_fasta(name1::AbstractString, name2::AbstractString; printtofile::
     end
     return usize, M1, M2
 end
+
+# Special constructor to create a Alignment from one HarmonizedAlignment and a matching 
+
+function Alignment(X12::ParalogMatching.HarmonizedAlignments, match::Vector{Int})
+    @extract X12 X1 X2
+    
+    N = X1.N + X2.N
+    X1.q == X2.q || warn("X1.q = ",X1.q, " X2.q = ", X2.q,"; Should be the same!")
+    q = X1.q
+
+    header = String[]
+    sequence = String[]
+    spec_name = String[]
+    spec_id = Int[]
+    uniprot_id=String[]
+    M = sum(match .> 0)
+    Z = zeros(Int8, M,N)
+    ctr = 0
+    for (i,edge) in enumerate(match)
+        edge == 0 && continue
+        ctr += 1
+        X1.spec_name[i] == X2.spec_name[edge] || error("do you have a well formed match ?")
+        X1.spec_id[i] == X2.spec_id[edge] || error("do you have a well formed match ?")
+        push!(header,string(">", X1.uniprot_id[i], "::", X2.uniprot_id[edge], "/", X1.spec_name[i]))
+        push!(sequence,X1.sequence[i] * X2.sequence[edge])
+        push!(spec_name,X1.sequence[i])
+        push!(spec_id,X1.spec_id[i])
+        push!(uniprot_id,X1.uniprot_id[i]*":"*X2.uniprot_id[edge])
+        for j=1:X1.N Z[ctr,j] = X1.Z[i,j] end
+        for j=1:X2.N Z[ctr,j+X1.N] = X2.Z[edge,j] end
+    end
+    return ParalogMatching.Alignment(N,M,q,Z,sequence,header,spec_name,spec_id,uniprot_id)
+end
