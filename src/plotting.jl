@@ -172,7 +172,7 @@ function trim_cov_match(nameX1, nameX2, namematch, prop, nameoutput)
     nuovomatch = zeros(X1.M)
     nuovomatch[edges1] = edges2
 
-    rewrite_fasta_match(X1, X2, nuovomatch, nameoutput)
+    write_fasta_match(X1, X2, nuovomatch, nameoutput)
 end
 
 #Function to return the Feinauer score of an alignment
