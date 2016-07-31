@@ -71,7 +71,7 @@ function write_fasta(X1::Alignment, name::AbstractString)
     @extract X1 : header sequence
     FastaWriter(name) do f
 	for (h,s) in zip(header, sequence)
-	    writeentry(f, (h, s))
+	    writeentry(f, h, s)
 	end
     end
 end
@@ -118,7 +118,7 @@ function intersection_fasta(name1::AbstractString, name2::AbstractString; printt
     try
 	for (h,s) in zip(X1.header, X1.sequence)
 	    h ∈ X2.header || continue
-	    printtofile && writeentry(f, (h, s))
+	    printtofile && writeentry(f, h, s)
 	    isize += 1
 	end
     finally
@@ -138,13 +138,13 @@ function union_fasta(name1::AbstractString, name2::AbstractString; printtofile::
     if printtofile
 	f = FastaWriter(string("UNION_", name1, "-", name2, ".fasta.gz"))
 	for (h,s) in zip(X1.header, X1.sequence)
-	    writeentry(f, (h, s))
+	    writeentry(f, h, s)
 	end
     end
     try
 	for (h,s) in zip(X2.header, X2.sequence)
 	    h ∈ X1.header && continue
-	    printtofile && writeentry(f, (h, s))
+	    printtofile && writeentry(f, h, s)
 	    usize += 1
 	end
     finally
