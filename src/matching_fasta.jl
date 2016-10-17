@@ -136,7 +136,7 @@ The keywords are:
 * `strategy`: the strategy to use when computing the matching. See below.
 
 * `pseudo_count`: gives the amount of regularization used for the inversion of the correlation matrix.
-A defaut of 0.5 gives sensible results, its value cannot be above 1.0.
+                  A defaut of 0.5 gives sensible results, its value cannot be above 1.0.
 
 * `lpsolver`: linear programming solver used when performing the matching with the `"covariation"` strategy.
 	      The default (`nothing`) uses the default solver as detected automatically by `MathProgBase`.
@@ -149,7 +149,7 @@ Available strategies are:
 
 + `"greedy"`: same as `"covariation"` but performs a greedy matching.
 
-+ `"random"`: produces a rendom matching, only useful to produce null models.
++ `"random"`: produces a random matching, only useful to produce null models.
 
 + `"genetic"`: tries to use the Uniprot ID information to determine which sequences belong to the
 	       same operon (only used for testing, not a valid general strategy)
