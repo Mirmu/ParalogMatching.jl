@@ -113,7 +113,7 @@
 <h1 id="paralogmatchingjl-documentation">ParalogMatching.jl documentation</h1>
 <p><a id='Introduction-1'></a></p>
 <h2 id="introduction">Introduction</h2>
-<p>This module implements the paralog matching technique presented in the paper <a href="http://arxiv.org/abs/1605.03745">Simultaneous identification of specifically interacting paralogs and inter-protein contacts by Direct-Coupling Analysis</a> by Thomas Gueudré, Carlo Baldassi, Marco Zamparo, Martin Weigt and Andrea Pagnani.</p>
+<p>This package implements the paralog matching technique presented in the paper <em>"Simultaneous identification of specifically interacting paralogs and interprotein contacts by Direct Coupling Analysis"</em> by Thomas Gueudré, Carlo Baldassi, Marco Zamparo, Martin Weigt and Andrea Pagnani, Proc. Natl. Acad. Sci. U.S.A. 201607570 (2016), <a href="http://dx.doi.org/10.1073/pnas.1607570113">doi:10.1073/pnas.1607570113</a></p>
 <p>The main idea of the method is to perform a statistical analysis of two given multiple sequence alignments, each containing one protein family. Each familiy should comprise several species, and each species may have several sequences belonging to the family. The algorithm tries to associate (match) interacting partners from the two families within each species.</p>
 <p>The underlying main assumption is that the proper matching is the one maximizing the co-evolution signal. Such maximization is performed over the Bayesian inference of a Gaussian model, by inverting the correlation matrix.</p>
 <p>The code is written in <a href="http://julialang.org">Julia</a>, and the functions are called from within Julia. However, a <a href=".#CLI-1">command-line interface</a> is also provided for those unfamiliar with the language.</p>
@@ -153,6 +153,7 @@
 <p>The output file format is documented in <a href=".#ParalogMatching.write_fasta_match"><code>write_fasta_match</code></a>.</p>
 <p>The keyword arguments are documented in <a href=".#ParalogMatching.prepare_alignments"><code>prepare_alignments</code></a> and <a href=".#ParalogMatching.run_matching"><code>run_matching</code></a>.</p>
 <p>Besides writing the <code>outfile</code>, this function also returns two values: the harmonized alignment (produced by <a href=".#ParalogMatching.prepare_alignments"><code>prepare_alignments</code></a>) and the resulting match (as returned by <a href=".#ParalogMatching.run_matching"><code>run_matching</code></a>).</p>
+<p><a target='_blank' href='https://github.com/Mirmu/ParalogMatching.jl/tree/e3fa7ab1a63af30da0c5488246de9412eae0f062/src/matching_fasta.jl#L204-L223' class='documenter-source'>source</a><br></p>
 <p><a id='low_level-1'></a></p>
 <h2 id="low-level-interface">Low-level interface</h2>
 <p>The low-level interface functions are called by <a href=".#ParalogMatching.paralog_matching"><code>paralog_matching</code></a> in the order in which they are documented here, but they can be called individually in order to inspect/manipulate the intermediate results if desired.</p>
@@ -168,6 +169,7 @@
 </code></pre>
 
 <p>then you can use a regex like this one: <code>read_fasta_alignment(..., header_regex=r"^([^/]+)/([^/]+)/")</code>, i.e. line start, anything except a slash (captured), followed by a slash, then anything except a slash (captured), then a slash — the remainder of the line is then simply ignored.</p>
+<p><a target='_blank' href='https://github.com/Mirmu/ParalogMatching.jl/tree/e3fa7ab1a63af30da0c5488246de9412eae0f062/src/readdata.jl#L4-L26' class='documenter-source'>source</a><br></p>
 <p><a id='ParalogMatching.prepare_alignments' href='#ParalogMatching.prepare_alignments'>#</a>
 <strong><code>ParalogMatching.prepare_alignments</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>prepare_alignments(X1::Alignment, X2::Alignment; cutoff::Integer = 500)
@@ -175,6 +177,7 @@
 
 <p>Prepares two alignments (as returned by <a href=".#ParalogMatching.read_fasta_alignment"><code>read_fasta_alignment</code></a>) and returns a <code>HarmonizedAlignments</code> object. This object contains two filtered version of the original alignments, in which only the sequences belonging to species which exist in both alignments are kept, and which is ready to be passed to <a href=".#ParalogMatching.run_matching"><code>run_matching</code></a>.</p>
 <p>The <code>cutoff</code> keyword argument can be used to discard all species for which there are more than a certain number of sequences in either alignment. Use <code>0</code> to disable this filter entirely.</p>
+<p><a target='_blank' href='https://github.com/Mirmu/ParalogMatching.jl/tree/e3fa7ab1a63af30da0c5488246de9412eae0f062/src/matching_fasta.jl#L5-L16' class='documenter-source'>source</a><br></p>
 <p><a id='ParalogMatching.run_matching' href='#ParalogMatching.run_matching'>#</a>
 <strong><code>ParalogMatching.run_matching</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>run_matching(X12::HarmonizedAlignments;
@@ -186,34 +189,27 @@
 <p>Returns the matching of the two alignments contained in <code>X12</code>, which need to be obtained by <a href=".#ParalogMatching.prepare_alignments"><code>prepare_alignments</code></a>. The returned matching is a Vector in which the entry <code>i</code> determines which sequence of the second alignment is the partner to sequence <code>i</code> in the first alignment.</p>
 <p>The keywords are:</p>
 <ul>
-<li>
-<p><code>batch</code>: how many species should be matched before updating the underlying model; smaller values give            better results but increase the computational time</p>
-</li>
-<li>
-<p><code>strategy</code>: the strategy to use when computing the matching. See below.</p>
-</li>
-<li>
-<p><code>pseudo_count</code>: gives the amount of regularization used for the inversion of the correlation matrix. A defaut of 0.5 gives sensible results, its value cannot be above 1.0.</p>
-</li>
-<li>
-<p><code>lpsolver</code>: linear programming solver used when performing the matching with the <code>"covariation"</code> strategy.        The default (<code>nothing</code>) uses the default solver as detected automatically by <code>MathProgBase</code>.        You can override this by passing e.g. <code>lpsolver = GurobiSolver(OutputFlag=false)</code> or similar        (see the documentation for <code>MathProgBase</code>).</p>
-</li>
+<li><code>batch</code>: how many species should be matched before updating the underlying model; smaller values give          better results but increase the computational time</li>
+<li><code>strategy</code>: the strategy to use when computing the matching. See below.</li>
+<li><code>pseudo_count</code>: gives the amount of regularization used for the inversion of the correlation matrix.                 A defaut of 0.5 gives sensible results, its value cannot be above 1.0.</li>
+<li><code>lpsolver</code>: linear programming solver used when performing the matching with the <code>"covariation"</code> strategy.</li>
 </ul>
+<pre><code>      The default (`nothing`) uses the default solver as detected automatically by `MathProgBase`.
+      You can override this by passing e.g. `lpsolver = GurobiSolver(OutputFlag=false)` or similar
+      (see the documentation for `MathProgBase`).
+</code></pre>
+
 <p>Available strategies are:</p>
 <ul>
-<li>
-<p><code>"covariation"</code>: uses the Gaussian model and performs a matching on the scores (default).</p>
-</li>
-<li>
-<p><code>"greedy"</code>: same as <code>"covariation"</code> but performs a greedy matching.</p>
-</li>
-<li>
-<p><code>"random"</code>: produces a rendom matching, only useful to produce null models.</p>
-</li>
-<li>
-<p><code>"genetic"</code>: tries to use the Uniprot ID information to determine which sequences belong to the            same operon (only used for testing, not a valid general strategy)</p>
-</li>
+<li><code>"covariation"</code>: uses the Gaussian model and performs a matching on the scores (default).</li>
+<li><code>"greedy"</code>: same as <code>"covariation"</code> but performs a greedy matching.</li>
+<li><code>"random"</code>: produces a random matching, only useful to produce null models.</li>
+<li><code>"genetic"</code>: tries to use the Uniprot ID information to determine which sequences belong to the</li>
 </ul>
+<pre><code>       same operon (only used for testing, not a valid general strategy)
+</code></pre>
+
+<p><a target='_blank' href='https://github.com/Mirmu/ParalogMatching.jl/tree/e3fa7ab1a63af30da0c5488246de9412eae0f062/src/matching_fasta.jl#L121-L157' class='documenter-source'>source</a><br></p>
 <p><a id='ParalogMatching.write_fasta_match' href='#ParalogMatching.write_fasta_match'>#</a>
 <strong><code>ParalogMatching.write_fasta_match</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>write_fasta_match(X12::HarmonizedAlignments, match::Vector{Int}, outfile::AbstractString)
@@ -222,6 +218,7 @@
 <p>Writes a new FASTA file obtained from the two alignments contained in the <code>X12</code> object and the matching contained in <code>match</code>.</p>
 <p>The sequences headers in the output file have the format <code>&gt;ID1::ID2/SPECIES</code>, where <code>ID1</code> represents the ID read from the first alignment, <code>ID2</code> that for the second alignment, and <code>SPECIES</code> is the species name.</p>
 <p>The new sequences in the output file are the concatenation of the matched sequences.</p>
+<p><a target='_blank' href='https://github.com/Mirmu/ParalogMatching.jl/tree/e3fa7ab1a63af30da0c5488246de9412eae0f062/src/manip_fasta.jl#L79-L90' class='documenter-source'>source</a><br></p>
 <p><a id='CLI-1'></a></p>
 <h2 id="command-line-interface">Command-line interface</h2>
 <p>In the <code>utils</code> directory there is a script which can be called from the command line, called <code>paralog_matching.jl</code>. Try calling it with:</p>
