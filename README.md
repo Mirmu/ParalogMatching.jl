@@ -5,9 +5,10 @@
 | [![][docs-latest-img]][docs-latest-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] [![][codecov-img]][codecov-url] |
 
 This package implements the paralog matching technique presented in the paper
-[Simultaneous identification of specifically interacting paralogs and
-inter-protein contacts by Direct-Coupling Analysis](http://arxiv.org/abs/1605.03745)
-by Thomas Gueudré, Carlo Baldassi, Marco Zamparo, Martin Weigt and Andrea Pagnani.
+*"Simultaneous identification of specifically interacting paralogs and
+interprotein contacts by Direct Coupling Analysis"*
+by Thomas Gueudré, Carlo Baldassi, Marco Zamparo, Martin Weigt and Andrea Pagnani,
+Proc. Natl. Acad. Sci. U.S.A. 201607570 (2016), [doi:10.1073/pnas.1607570113](http://dx.doi.org/10.1073/pnas.1607570113)
 
 The main idea of the method is to perform a statistical analysis of two given
 multiple sequence alignments, each containing one protein family. Each familiy should
@@ -24,7 +25,7 @@ The code is written in [Julia](http://julialang.org), and the functions are call
 from within Julia. However, a command-line interface is also provided for
 those unfamiliar with the language (see the documentation).
 
-The package is tested against Julia `0.4` and *current* `0.5-dev` on Linux, OS X, and Windows.
+The package is tested against Julia `0.4`, `0.5` and *current* `0.6-dev` on Linux, OS X, and Windows.
 
 ## Installation
 
