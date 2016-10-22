@@ -3,6 +3,7 @@ module ParalogMatchingTests
 using ParalogMatching
 using FastaIO
 using Base.Test
+using Compat: String
 
 const testfile1 = "X1.fasta.gz"
 const testfile2 = "X2.fasta.gz"
@@ -21,11 +22,35 @@ function test()
         @test M1 == M2
         @test M1 == Mharmo
     finally
-        rm(outfile_tst)
-        rm(outfile_harmonized)
+        isfile(outfile_tst) && rm(outfile_tst)
+        isfile(outfile_harmonized) && rm(outfile_harmonized)
     end
 end
 
+function regex_tests()
+    header = String["SOMELOCATION/SOMESPECIES/OTHERINFO"]
+    answer = [1], ["SOMESPECIES"], ["SOMELOCATION"]
+
+    @test ParalogMatching.compute_spec(header, r"^([^/]+)/([^/]+)/") == answer
+    @test ParalogMatching.compute_spec(header, r"^([^/]+)/([^/]+)/(.*)") == answer
+    @test ParalogMatching.compute_spec(header, r"^(?<id>[^/]+)/(?<species>[^/]+)/") == answer
+    @test ParalogMatching.compute_spec(header, r"^(?<id>[^/]+)(/)(?<species>[^/]+)/") == answer
+    @test ParalogMatching.compute_spec(header, r"^([^/]+)/([^/]+)/(?<rest>.*)") == answer
+    @test ParalogMatching.compute_spec(header, r"^(?<id>[^/]+)(/)(?<species>[^/]+)/(?<rest>.*)") == answer
+
+    @test_throws ErrorException ParalogMatching.compute_spec(header, r"^([^/]+)/[^/]+/")
+    @test_throws ErrorException ParalogMatching.compute_spec(header, r"^(?<id>[^/]+)/([^/]+)/")
+    @test_throws ErrorException ParalogMatching.compute_spec(header, r"^([^/]+)/(?<species>[^/]+)/")
+
+    header = String["SOMESPECIES/OTHERINFO/SOMELOCATION"]
+    @test ParalogMatching.compute_spec(header, r"^(?<species>[^/]+)/([^/]+)/(?<id>.+)") == answer
+
+    header = String["SOMELOCATION/SOMESPECIES/OTHERINFO", "OTHERLOC/DOESNTMATCH"]
+    @test_throws ErrorException ParalogMatching.compute_spec(header, r"^([^/]+)/([^/]+)/")
+    @test_throws ErrorException ParalogMatching.compute_spec(header, r"^(?<id>[^/]+)/(?<species>[^/]+)/")
+end
+
 test()
+regex_tests()
 
 end # module
