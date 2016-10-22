@@ -153,7 +153,7 @@
 <p>The output file format is documented in <a href=".#ParalogMatching.write_fasta_match"><code>write_fasta_match</code></a>.</p>
 <p>The keyword arguments are documented in <a href=".#ParalogMatching.prepare_alignments"><code>prepare_alignments</code></a> and <a href=".#ParalogMatching.run_matching"><code>run_matching</code></a>.</p>
 <p>Besides writing the <code>outfile</code>, this function also returns two values: the harmonized alignment (produced by <a href=".#ParalogMatching.prepare_alignments"><code>prepare_alignments</code></a>) and the resulting match (as returned by <a href=".#ParalogMatching.run_matching"><code>run_matching</code></a>).</p>
-<p><a target='_blank' href='https://github.com/Mirmu/ParalogMatching.jl/tree/5288d7e4ceb28e3103db8bab6675c2860676db63/src/matching_fasta.jl#L204-L223' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/Mirmu/ParalogMatching.jl/tree/fe4ae459b6449802382b050ed86c354edc672356/src/matching_fasta.jl#L204-L223' class='documenter-source'>source</a><br></p>
 <p><a id='low_level-1'></a></p>
 <h2 id="low-level-interface">Low-level interface</h2>
 <p>The low-level interface functions are called by <a href=".#ParalogMatching.paralog_matching"><code>paralog_matching</code></a> in the order in which they are documented here, but they can be called individually in order to inspect/manipulate the intermediate results if desired.</p>
@@ -173,7 +173,7 @@
 </code></pre>
 
 <p>then you can use a regex like this one: <code>header_regex=r"^(?&lt;species&gt;[^/]+)/([^/]+)/(?&lt;id&gt;.+)"</code>, i.e. line start, anything except a slash (capture as the species name), followed by a slash, then anything except a slash (captured but ignored), followed by a slash, then the rest of the line (captured as the ID).</p>
-<p><a target='_blank' href='https://github.com/Mirmu/ParalogMatching.jl/tree/5288d7e4ceb28e3103db8bab6675c2860676db63/src/readdata.jl#L4-L39' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/Mirmu/ParalogMatching.jl/tree/fe4ae459b6449802382b050ed86c354edc672356/src/readdata.jl#L4-L39' class='documenter-source'>source</a><br></p>
 <p><a id='ParalogMatching.prepare_alignments' href='#ParalogMatching.prepare_alignments'>#</a>
 <strong><code>ParalogMatching.prepare_alignments</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>prepare_alignments(X1::Alignment, X2::Alignment; cutoff::Integer = 500)
@@ -181,7 +181,7 @@
 
 <p>Prepares two alignments (as returned by <a href=".#ParalogMatching.read_fasta_alignment"><code>read_fasta_alignment</code></a>) and returns a <code>HarmonizedAlignments</code> object. This object contains two filtered version of the original alignments, in which only the sequences belonging to species which exist in both alignments are kept, and which is ready to be passed to <a href=".#ParalogMatching.run_matching"><code>run_matching</code></a>.</p>
 <p>The <code>cutoff</code> keyword argument can be used to discard all species for which there are more than a certain number of sequences in either alignment. Use <code>0</code> to disable this filter entirely.</p>
-<p><a target='_blank' href='https://github.com/Mirmu/ParalogMatching.jl/tree/5288d7e4ceb28e3103db8bab6675c2860676db63/src/matching_fasta.jl#L5-L16' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/Mirmu/ParalogMatching.jl/tree/fe4ae459b6449802382b050ed86c354edc672356/src/matching_fasta.jl#L5-L16' class='documenter-source'>source</a><br></p>
 <p><a id='ParalogMatching.run_matching' href='#ParalogMatching.run_matching'>#</a>
 <strong><code>ParalogMatching.run_matching</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>run_matching(X12::HarmonizedAlignments;
@@ -213,7 +213,7 @@
 <pre><code>       same operon (only used for testing, not a valid general strategy)
 </code></pre>
 
-<p><a target='_blank' href='https://github.com/Mirmu/ParalogMatching.jl/tree/5288d7e4ceb28e3103db8bab6675c2860676db63/src/matching_fasta.jl#L121-L157' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/Mirmu/ParalogMatching.jl/tree/fe4ae459b6449802382b050ed86c354edc672356/src/matching_fasta.jl#L121-L157' class='documenter-source'>source</a><br></p>
 <p><a id='ParalogMatching.write_fasta_match' href='#ParalogMatching.write_fasta_match'>#</a>
 <strong><code>ParalogMatching.write_fasta_match</code></strong> &mdash; <em>Function</em>.</p>
 <pre><code>write_fasta_match(X12::HarmonizedAlignments, match::Vector{Int}, outfile::AbstractString)
@@ -222,7 +222,7 @@
 <p>Writes a new FASTA file obtained from the two alignments contained in the <code>X12</code> object and the matching contained in <code>match</code>.</p>
 <p>The sequences headers in the output file have the format <code>&gt;ID1::ID2/SPECIES</code>, where <code>ID1</code> represents the ID read from the first alignment, <code>ID2</code> that for the second alignment, and <code>SPECIES</code> is the species name.</p>
 <p>The new sequences in the output file are the concatenation of the matched sequences.</p>
-<p><a target='_blank' href='https://github.com/Mirmu/ParalogMatching.jl/tree/5288d7e4ceb28e3103db8bab6675c2860676db63/src/manip_fasta.jl#L79-L90' class='documenter-source'>source</a><br></p>
+<p><a target='_blank' href='https://github.com/Mirmu/ParalogMatching.jl/tree/fe4ae459b6449802382b050ed86c354edc672356/src/manip_fasta.jl#L79-L90' class='documenter-source'>source</a><br></p>
 <p><a id='CLI-1'></a></p>
 <h2 id="command-line-interface">Command-line interface</h2>
 <p>In the <code>utils</code> directory there is a script which can be called from the command line, called <code>paralog_matching.jl</code>. Try calling it with:</p>
