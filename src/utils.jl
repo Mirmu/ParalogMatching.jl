@@ -110,7 +110,7 @@ function unitFC!(X1, X2, match, nspecs, prior)
 
         ####
         prior.specs = setdiff(prior.specs, recomp_specs)
-        M[1] = M[1] - len
+        M[1] -= len
     end
 
     # check the species have been removed
@@ -155,9 +155,9 @@ function unitFC!(X1, X2, match, nspecs, prior)
         end
     end
 
-    prior.specs = sort([prior.specs;nspecs])
-    M[1] = M[1] + len
-    prior.matching[:] = match[:]
+    prior.specs = sort([prior.specs; nspecs])
+    M[1] += len
+    copy!(prior.matching, match)
     return nothing
 end
 
@@ -215,8 +215,8 @@ function give_correction(X1, X2, freq::FreqC, invC::Matrix{Float64}, spec::Int, 
     #solver = GurobiSolver(OutputFlag=false)
     #solver = ClpSolver()
     #solver = GLPKSolverLP()
-    #solver = MathProgBase.defaultLPsolver # TODO: allow choosing the solver
-    #solver = MathProgBase.defaultMIPsolver # TODO: allow choosing the solver
+    #solver = MathProgBase.defaultLPsolver
+    #solver = MathProgBase.defaultMIPsolver
 
     # First covariation/greedy strategy
     if strategy ∈ ("covariation", "greedy")

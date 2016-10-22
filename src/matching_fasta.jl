@@ -30,7 +30,7 @@ function start_matching(X12::HarmonizedAlignments)
     @extract X2  : spec_id2=spec_id
     match = zeros(spec_id1)
 
-    #finds the indices of the species with one single sequence
+    # Finds the indices of the species with one single sequence
     ind1 = index_of_unique(spec_id1)
     ind2 = index_of_unique(spec_id2)
 
