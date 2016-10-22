@@ -94,7 +94,7 @@ end
 function specname(s::String, header_regex::Union{Void,Regex} = nothing)
     if header_regex ≢ nothing
         # user-defined format
-        if ismatch(header_regex)
+        if ismatch(header_regex, s)
             captures = match(header_regex, s).captures
             length(captures) == 2 || error("Invalid header regex: should always return 2 captured groups if it matches; has returned: $(length(captures))")
             uniprot_id, spec_name = captures
