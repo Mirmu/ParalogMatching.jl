@@ -6,7 +6,7 @@ This package implements the paralog matching technique presented in the paper
 *"Simultaneous identification of specifically interacting paralogs and
 interprotein contacts by Direct Coupling Analysis"*
 by Thomas Gueudré, Carlo Baldassi, Marco Zamparo, Martin Weigt and Andrea Pagnani,
-Proc. Natl. Acad. Sci. U.S.A. 201607570 (2016), [doi:10.1073/pnas.1607570113](http://dx.doi.org/10.1073/pnas.1607570113)
+Proc. Natl. Acad. Sci. U.S.A. 113, 12186–12191 (2016), [doi:10.1073/pnas.1607570113](http://dx.doi.org/10.1073/pnas.1607570113)
 
 The main idea of the method is to perform a statistical analysis of two given
 multiple sequence alignments, each containing one protein family. Each familiy should
