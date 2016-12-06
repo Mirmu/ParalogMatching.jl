@@ -64,8 +64,12 @@ function initialize_matching(X12::HarmonizedAlignments, pseudo_count::Float64)
     unitFC!(X1, X2, match, single, freq)
 
     # Finally compute the inverse of the corr matrix
-    invC = inverse_with_pseudo!(corr, freq, pseudo_count)
-
+    if isempty(find(match))
+	println("WARNING ! 0 sequence matched by uniqueness. No covariation strategy possible.")
+	invC = zeros(size(corr.Cij))
+    else
+	invC = inverse_with_pseudo!(corr, freq, pseudo_count)
+    end
     println("Setup computed")
     return X1, X2, match, freq, corr, invC
 end
