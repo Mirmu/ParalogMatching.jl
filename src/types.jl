@@ -14,14 +14,14 @@ immutable Alignment
     uniprot_id::Vector{String}
 end
 
-@compat Base.:(==)(X1::Alignment, X2::Alignment) = all(fn->getfield(X1, fn) == getfield(X2, fn), fieldnames(Alignment))
+Base.:(==)(X1::Alignment, X2::Alignment) = all(fn->getfield(X1, fn) == getfield(X2, fn), fieldnames(Alignment))
 
 immutable HarmonizedAlignments
     X1::Alignment
     X2::Alignment
 end
 
-@compat Base.:(==)(H1::HarmonizedAlignments, H2::HarmonizedAlignments) =
+Base.:(==)(H1::HarmonizedAlignments, H2::HarmonizedAlignments) =
     all(fn->getfield(H1, fn) == getfield(H2, fn), fieldnames(HarmonizedAlignments))
 
 # FreqC is the type of the frequency matrix
@@ -38,11 +38,11 @@ type FreqC
     matching::Vector{Int}
     q::Int
     function FreqC(X1::Alignment, X2::Alignment)
-	@extract X1 : N1=N M q
-	@extract X2 : N2=N
-	N = N1 + N2
-	s = q - 1
-	return new(zeros(s * N, s * N), zeros(N * s), [], [0, 0], zeros(M), q)
+        @extract X1 : N1=N M q
+        @extract X2 : N2=N
+        N = N1 + N2
+        s = q - 1
+        return new(zeros(s * N, s * N), zeros(N * s), [], [0, 0], zeros(M), q)
     end
 end
 

@@ -9,12 +9,12 @@ function order_and_cut(Xtot::Alignment, cutoff::Integer)
     kept = Int[]
     # Orders so that families have contiguous sequences organized in blocks
     for (fam,n,inds) in cand
-	n > cutoff && continue
-	append!(kept, inds)
+        n > cutoff && continue
+        append!(kept, inds)
     end
 
     return Alignment(N, length(kept), q, Z[kept,:],
-		     sequence[kept], header[kept], spec_name[kept], spec_id[kept], uniprot_id[kept])
+                     sequence[kept], header[kept], spec_name[kept], spec_id[kept], uniprot_id[kept])
 end
 
 # Harmonizing consists of creating the following structure for a FASTA:
@@ -29,19 +29,15 @@ function harmonize_fasta(X1::Alignment, X2::Alignment)
 
     isempty(kept) && error("No species in common found in the alignments")
 
-    #@compat kd = Dict(s=>i for (i,s) in enumerate(kept)) # associate an index to each kept species
-    kd = Dict{String,Int}() # TODO: use generators when 0.4 support is dropped
-    for (i,s) in enumerate(kept)
-	kd[s] = i
-    end
+    kd = Dict(s=>i for (i,s) in enumerate(kept)) # associate an index to each kept species
 
     ind1, sid1 = compute_new_inds(spec_name1, kd)
     ind2, sid2 = compute_new_inds(spec_name2, kd)
 
     al1 = Alignment(N1, length(ind1), q1, Z1[ind1, :], sequence1[ind1], header1[ind1],
-		    spec_name1[ind1], sid1, uniprot_id1[ind1])
+                    spec_name1[ind1], sid1, uniprot_id1[ind1])
     al2 = Alignment(N2, length(ind2), q2, Z2[ind2, :], sequence2[ind2], header2[ind2],
-		    spec_name2[ind2], sid2, uniprot_id2[ind2])
+                    spec_name2[ind2], sid2, uniprot_id2[ind2])
 
     return HarmonizedAlignments(al1, al2)
 end
@@ -51,10 +47,10 @@ function compute_new_inds(spec_name::Vector{String}, kd::Dict{String,Int})
     ind = Int[] # the subset of indices to keep
     sid = Int[] # the new species ids
     for (i,s) in enumerate(spec_name)
-	id = get(kd, s, 0) # get the species index in the `kept` vector
-	id == 0 && continue # the species is not in `kept`
-	push!(sid, id)
-	push!(ind, i)
+        id = get(kd, s, 0) # get the species index in the `kept` vector
+        id == 0 && continue # the species is not in `kept`
+        push!(sid, id)
+        push!(ind, i)
     end
     # here, ind is sorted but sid is not
     # we want to sort everything according to the new species ids
@@ -70,9 +66,9 @@ end
 function write_fasta(X1::Alignment, name::AbstractString)
     @extract X1 : header sequence
     FastaWriter(name) do f
-	for (h,s) in zip(header, sequence)
-	    writeentry(f, h, s)
-	end
+        for (h,s) in zip(header, sequence)
+            writeentry(f, h, s)
+        end
     end
 end
 
@@ -91,14 +87,14 @@ The new sequences in the output file are the concatenation of the matched sequen
 function write_fasta_match(X12::HarmonizedAlignments, match::Vector{Int}, outfile::AbstractString)
     @extract X12 : X1 X2
     FastaWriter(outfile) do f
-	for (i,edge) in enumerate(match)
-	    edge == 0 && continue
-	    X1.spec_name[i] == X2.spec_name[edge] || error("do you have a well formed match ?")
-	    h = string(">", X1.uniprot_id[i], "::", X2.uniprot_id[edge], "/", X1.spec_name[i])
-	    write(f, h)
-	    write(f, X1.sequence[i])
-	    write(f, X2.sequence[edge])
-	end
+        for (i,edge) in enumerate(match)
+            edge == 0 && continue
+            X1.spec_name[i] == X2.spec_name[edge] || error("do you have a well formed match ?")
+            h = string(">", X1.uniprot_id[i], "::", X2.uniprot_id[edge], "/", X1.spec_name[i])
+            write(f, h)
+            write(f, X1.sequence[i])
+            write(f, X2.sequence[edge])
+        end
     end
 end
 
@@ -113,16 +109,16 @@ function intersection_fasta(name1::AbstractString, name2::AbstractString; printt
     M2 = X2.M
     isize = 0
     if printtofile
-	f = FastaWriter(string("INTERSECTION_", name1, "-", name2, ".fasta.gz"))
+        f = FastaWriter(string("INTERSECTION_", name1, "-", name2, ".fasta.gz"))
     end
     try
-	for (h,s) in zip(X1.header, X1.sequence)
-	    h ∈ X2.header || continue
-	    printtofile && writeentry(f, h, s)
-	    isize += 1
-	end
+        for (h,s) in zip(X1.header, X1.sequence)
+            h ∈ X2.header || continue
+            printtofile && writeentry(f, h, s)
+            isize += 1
+        end
     finally
-	printtofile && close(f)
+        printtofile && close(f)
     end
     return isize, M1, M2
 end
@@ -136,19 +132,19 @@ function union_fasta(name1::AbstractString, name2::AbstractString; printtofile::
     M2 = X2.M
     usize = M1
     if printtofile
-	f = FastaWriter(string("UNION_", name1, "-", name2, ".fasta.gz"))
-	for (h,s) in zip(X1.header, X1.sequence)
-	    writeentry(f, h, s)
-	end
+        f = FastaWriter(string("UNION_", name1, "-", name2, ".fasta.gz"))
+        for (h,s) in zip(X1.header, X1.sequence)
+            writeentry(f, h, s)
+        end
     end
     try
-	for (h,s) in zip(X2.header, X2.sequence)
-	    h ∈ X1.header && continue
-	    printtofile && writeentry(f, h, s)
-	    usize += 1
-	end
+        for (h,s) in zip(X2.header, X2.sequence)
+            h ∈ X1.header && continue
+            printtofile && writeentry(f, h, s)
+            usize += 1
+        end
     finally
-	printtofile && close(f)
+        printtofile && close(f)
     end
     return usize, M1, M2
 end

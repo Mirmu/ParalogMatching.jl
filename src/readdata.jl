@@ -80,9 +80,9 @@ function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float6
 
     # pass 2
 
-    Z = Array(Int8, fseqlen, length(seqs))
-    header =  Array(String, length(seqs));
-    sequence =  Array(String, length(seqs));
+    Z = Array{Int8}(fseqlen, length(seqs))
+    header =  Array{String}(length(seqs));
+    sequence =  Array{String}(length(seqs));
     seqid = 1
     for (name, seq) in f
         header[seqid] = name
@@ -167,11 +167,7 @@ function compute_spec(header::Vector{String}, header_regex::Union{Void,Regex} = 
     end
 
     specunique = unique(spec_name)
-    #@compat sdict = Dict([s=>i for (i,s) in enumerate(specunique)])
-    sdict = Dict{String,Int}() # TODO: use generators when 0.4 support is dropped
-    for (i,s) in enumerate(specunique)
-        sdict[s] = i
-    end
+    sdict = Dict{String,Int}(s=>i for (i,s) in enumerate(specunique))
     spec_id = Int[sdict[sn] for sn in spec_name]
 
     return spec_id, spec_name, uniprot_id
