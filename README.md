@@ -8,24 +8,24 @@ This package implements the paralog matching technique presented in the paper
 *"Simultaneous identification of specifically interacting paralogs and
 interprotein contacts by Direct Coupling Analysis"*
 by Thomas Gueudré, Carlo Baldassi, Marco Zamparo, Martin Weigt and Andrea Pagnani,
-Proc. Natl. Acad. Sci. U.S.A. 113, 12186–12191 (2016), [doi:10.1073/pnas.1607570113](http://dx.doi.org/10.1073/pnas.1607570113)
+Proc. Natl. Acad. Sci. U.S.A. 113, 12186–12191 (2016), [doi:10.1073/pnas.1607570113][paper].
 
 The main idea of the method is to perform a statistical analysis of two given
 multiple sequence alignments, each containing one protein family. Each familiy should
 comprise several species, and each species may have several sequences belonging to the
 family. The algorithm tries to associate (match) interacting partners from the two families
 within each species. It belongs to the more general class of
-[Direct Coupling Analysis methods](https://en.wikipedia.org/wiki/Direct_coupling_analysis). 
+[Direct Coupling Analysis methods][dca-wiki].
 
 The underlying main assumption is that the proper matching is the one maximizing the
 co-evolution signal. Such maximization is performed over the Bayesian inference of a
 Gaussian model, by inverting the correlation matrix.
 
-The code is written in [Julia](http://julialang.org), and the functions are called
+The code is written in [Julia][julia], and the functions are called
 from within Julia. However, a command-line interface is also provided for
 those unfamiliar with the language (see the documentation).
 
-The package is tested against Julia `0.4`, `0.5` and *current* `0.6-dev` on Linux, OS X, and Windows.
+The package is tested against Julia `0.5` and *current* `0.6-pre` on Linux, OS X, and Windows.
 
 ## Installation
 
@@ -37,12 +37,13 @@ julia> Pkg.clone("https://github.com/Mirmu/ParalogMatching.jl")
 
 Dependencies will be installed automatically.
 
-However, you will also need to install at least one linear programming solver supported by
-[MathProgBase](http://mathprogbasejl.readthedocs.io/en/latest/).
-See the list of available solvers at the [JuliaOpt page](http://www.juliaopt.org/#packages).
-Note that the solver efficiency is not particularly important for paralog matching, whose computational time
-is dominated by matrix inversion operations, therefore you don't need a particularly fast solver. If unsure,
-use `Pkg.add("Clp")` or `Pkg.add("GLPKMathProgInterface")`, which are free and open-source solvers.
+The package requires to install at least one linear programming solver supported by
+[MathProgBase][mathprogbase].
+By default, it uses [GLPK][glpk], which is free and open source, but you can choose any another:
+see the list of available solvers at the [JuliaOpt page][solvers].
+However, note that the solver efficiency is not particularly important for paralog matching,
+whose computational time is dominated by matrix inversion operations, therefore it's likely that
+you won't need a particularly fast solver.
 
 ## Documentation
 
@@ -52,6 +53,14 @@ use `Pkg.add("Clp")` or `Pkg.add("GLPKMathProgInterface")`, which are free and o
 
 Contributions are very welcome, as are feature requests and suggestions. Please open an
 [issue][issues-url] if you encounter any problems or would just like to ask a question.
+
+[paper]: http://dx.doi.org/10.1073/pnas.1607570113
+[dca-wiki]: https://en.wikipedia.org/wiki/Direct_coupling_analysis
+[julia]: https://julialang.org
+
+[mathprogbase]: http://mathprogbasejl.readthedocs.io/en/latest/
+[glpk]: https://github.com/JuliaOpt/GLPK.jl
+[solvers]: http://www.juliaopt.org/#packages
 
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
 [docs-latest-url]: https://Mirmu.github.io/ParalogMatching.jl/latest

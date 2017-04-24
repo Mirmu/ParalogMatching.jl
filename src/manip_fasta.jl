@@ -29,11 +29,7 @@ function harmonize_fasta(X1::Alignment, X2::Alignment)
 
     isempty(kept) && error("No species in common found in the alignments")
 
-    #@compat kd = Dict(s=>i for (i,s) in enumerate(kept)) # associate an index to each kept species
-    kd = Dict{String,Int}() # TODO: use generators when 0.4 support is dropped
-    for (i,s) in enumerate(kept)
-	kd[s] = i
-    end
+    kd = Dict(s=>i for (i,s) in enumerate(kept)) # associate an index to each kept species
 
     ind1, sid1 = compute_new_inds(spec_name1, kd)
     ind2, sid2 = compute_new_inds(spec_name2, kd)

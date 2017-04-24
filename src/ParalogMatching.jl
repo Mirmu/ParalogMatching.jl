@@ -2,14 +2,14 @@
 
 module ParalogMatching
 
-using FastaIO, ExtractMacro, Iterators, Compat
+using FastaIO, ExtractMacro, Iterators
 using Distributions
 using MathProgBase
+using GLPKMathProgInterface
+const default_lpsolver = GLPKSolverLP()
 
 export read_fasta_alignment, prepare_alignments, run_matching,
        write_fasta_match, paralog_matching
-
-import Compat: String
 
 # Including the types used for the Matching
 include("types.jl")

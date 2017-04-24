@@ -14,14 +14,14 @@ immutable Alignment
     uniprot_id::Vector{String}
 end
 
-@compat Base.:(==)(X1::Alignment, X2::Alignment) = all(fn->getfield(X1, fn) == getfield(X2, fn), fieldnames(Alignment))
+Base.:(==)(X1::Alignment, X2::Alignment) = all(fn->getfield(X1, fn) == getfield(X2, fn), fieldnames(Alignment))
 
 immutable HarmonizedAlignments
     X1::Alignment
     X2::Alignment
 end
 
-@compat Base.:(==)(H1::HarmonizedAlignments, H2::HarmonizedAlignments) =
+Base.:(==)(H1::HarmonizedAlignments, H2::HarmonizedAlignments) =
     all(fn->getfield(H1, fn) == getfield(H2, fn), fieldnames(HarmonizedAlignments))
 
 # FreqC is the type of the frequency matrix

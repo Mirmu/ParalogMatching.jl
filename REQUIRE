@@ -1,8 +1,8 @@
-julia 0.4
+julia 0.5
 FastaIO
 Iterators
-Compat 0.8
 Distributions
-MathProgBase 0.5.0 0.6-
+MathProgBase 0.6.0 0.7-
 ExtractMacro
 ArgParse
+GLPKMathProgInterface 0.3.0

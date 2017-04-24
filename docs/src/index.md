@@ -34,12 +34,14 @@ julia> Pkg.clone("https://github.com/Mirmu/ParalogMatching.jl")
 
 Dependencies will be installed automatically.
 
-However, you will also need to install at least one linear programming solver supported by
+The package requires to install at least one linear programming solver supported by
 [MathProgBase](http://mathprogbasejl.readthedocs.io/en/latest/).
-See the list of available solvers at the [JuliaOpt page](http://www.juliaopt.org/#packages).
-Note that the solver efficiency is not particularly important for paralog matching, whose computational time
-is dominated by matrix inversion operations, therefore you don't need a particularly fast solver. If unsure,
-use `Pkg.add("Clp")` or `Pkg.add("GLPKMathProgInterface")`, which are free and open-source solvers.
+By default, it uses [GLPK](https://github.com/JuliaOpt/GLPK.jl), which is free and open source,
+but you can choose any another: see the list of available solvers at the
+[JuliaOpt page](http://www.juliaopt.org/#packages).
+However, note that the solver efficiency is not particularly important for paralog matching,
+whose computational time is dominated by matrix inversion operations, therefore it's likely that
+you won't need a particularly fast solver.
 
 ### Usage
 

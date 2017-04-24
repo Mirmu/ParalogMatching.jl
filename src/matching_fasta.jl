@@ -122,7 +122,7 @@ end
     run_matching(X12::HarmonizedAlignments;
 		 batch = 1,
 		 strategy = "covariation",
-		 lpsolver = nothing)
+                 lpsolver = GLPKSolverLP())
 
 Returns the matching of the two alignments contained in `X12`, which need to be obtained by [`prepare_alignments`](@ref).
 The returned matching is a Vector in which the entry `i` determines which sequence of the second alignment
@@ -139,7 +139,7 @@ The keywords are:
                   A defaut of 0.5 gives sensible results, its value cannot be above 1.0.
 
 * `lpsolver`: linear programming solver used when performing the matching with the `"covariation"` strategy.
-	      The default (`nothing`) uses the default solver as detected automatically by `MathProgBase`.
+	      The default uses a solver provided bu the `GLPK` library.
 	      You can override this by passing e.g. `lpsolver = GurobiSolver(OutputFlag=false)` or similar
 	      (see the documentation for `MathProgBase`).
 
@@ -159,7 +159,7 @@ function run_matching(X12::HarmonizedAlignments;
 		      batch::Integer = 1,
 		      pseudo_count::Float64 = 0.5,
 		      strategy::AbstractString = "covariation",
-		      lpsolver::Union{MathProgBase.SolverInterface.AbstractMathProgSolver,Void} = nothing)
+		      lpsolver::MathProgBase.SolverInterface.AbstractMathProgSolver = default_lpsolver)
 
     X1, X2, match, freq, corr, invC = initialize_matching(X12, pseudo_count)
 
@@ -167,8 +167,6 @@ function run_matching(X12::HarmonizedAlignments;
     strategy ∈ valid_strats ||
 	throw(ArgumentError("unknown strategy: $strategy. Must be one of: $(join(valid_strats, ", ", " or "))"))
     pseudo_count>0.0 && (pseudo_count < 1.0) || throw(ArgumentError("invalid value of the pseudo_count, must be a real between 0.0 and 1.0"))
-
-    lpsolver ≡ nothing && (lpsolver = MathProgBase.defaultLPsolver)
 
     # Computes the entropy of the families and batch them from easiest to hardest
     spec = spec_entropy(X1, X2)
@@ -206,7 +204,7 @@ end
 		     cutoff = 500,
 		     batch = 1,
 		     strategy = "covariation",
-		     lpsolver = nothing)
+                     lpsolver = GLPKSolverLP())
 
 This function performs the paralog matching from two given FASTA files containing the alignments for
 two different protein families. When the matching is done, it writes the result in a new FASTA file,
@@ -228,7 +226,7 @@ function paralog_matching(infile1::AbstractString,
 			  batch::Integer = 1,
 			  strategy::AbstractString = "covariation",
 			  pseudo_count::Float64= 0.5,
-			  lpsolver::Union{MathProgBase.SolverInterface.AbstractMathProgSolver,Void} = nothing)
+			  lpsolver::MathProgBase.SolverInterface.AbstractMathProgSolver = default_lpsolver)
 
     X1 = read_fasta_alignment(infile1)
     X2 = read_fasta_alignment(infile2)
