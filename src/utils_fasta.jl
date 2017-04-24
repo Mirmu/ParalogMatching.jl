@@ -8,13 +8,13 @@ function tally(list)
     tallist = Tuple{eltype(list),Int}[]
 
     for el in slist
-	if el == comp
-	    counter += 1
-	else
-	    push!(tallist, (comp, counter))
-	    comp = el
-	    counter = 1
-	end
+        if el == comp
+            counter += 1
+        else
+            push!(tallist, (comp, counter))
+            comp = el
+            counter = 1
+        end
     end
     push!(tallist, (comp, counter))
     return tallist
@@ -30,15 +30,15 @@ function tally_backref(list)
     tallist = Tuple{eltype(list),Int,Vector{Int}}[]
 
     for (i,el) in zip(p,slist)
-	if el == comp
-	    counter += 1
-	    push!(inds, i)
-	else
-	    push!(tallist, (comp, counter, inds))
-	    comp = el
-	    inds = Int[i]
-	    counter = 1
-	end
+        if el == comp
+            counter += 1
+            push!(inds, i)
+        else
+            push!(tallist, (comp, counter, inds))
+            comp = el
+            inds = Int[i]
+            counter = 1
+        end
     end
     push!(tallist, (comp, counter, inds))
     return tallist
@@ -54,15 +54,15 @@ function index_of_unique(list)
     chgd = true
     prev = list[1]
     for i = 2:L
-	curr = list[i]
-	curr ≥ prev || error("list is not sorted")
-	if curr ≠ prev
-	    chgd && push!(ind, i-1)
-	    chgd = true
-	else
-	    chgd = false
-	end
-	prev = curr
+        curr = list[i]
+        curr ≥ prev || error("list is not sorted")
+        if curr ≠ prev
+            chgd && push!(ind, i-1)
+            chgd = true
+        else
+            chgd = false
+        end
+        prev = curr
     end
     chgd && push!(ind, L)
     return ind

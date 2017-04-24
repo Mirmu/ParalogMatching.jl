@@ -17,8 +17,8 @@ filter entirely.
 function prepare_alignments(Xi1::Alignment, Xi2::Alignment; cutoff::Integer = 500)
     cutoff == 0 && (cutoff = typemax(Int))
     println("initializing the matching",
-	    cutoff < typemax(Int) ? ", removing families larger than $cutoff" : "",
-	    "...")
+            cutoff < typemax(Int) ? ", removing families larger than $cutoff" : "",
+            "...")
     return harmonize_fasta(order_and_cut(Xi1, cutoff), order_and_cut(Xi2, cutoff))
 end
 
@@ -37,9 +37,9 @@ function start_matching(X12::HarmonizedAlignments)
     candi = intersect(spec_id1[ind1], spec_id2[ind2])
 
     for el in candi
-	a1 = findfirst(spec_id1, el)
-	a2 = findfirst(spec_id2, el)
-	match[a1] = a2
+        a1 = findfirst(spec_id1, el)
+        a2 = findfirst(spec_id2, el)
+        match[a1] = a2
     end
     return match
 end
@@ -73,8 +73,8 @@ end
 # par_corr gathers for each species in specl, the matching obtained by the "strategy" strategy
 # And returns an array of those matchings
 function par_corr(X1::Alignment, X2::Alignment, freq::FreqC, invC::Matrix{Float64},
-		  specl::Vector{Int}, strategy::AbstractString,
-		  lpsolver::MathProgBase.SolverInterface.AbstractMathProgSolver)
+                  specl::Vector{Int}, strategy::AbstractString,
+                  lpsolver::MathProgBase.SolverInterface.AbstractMathProgSolver)
     return [give_correction(X1, X2, freq, invC, i, strategy, lpsolver) for i in specl]
 end
 
@@ -90,13 +90,13 @@ function spec_entropy(X1::Alignment, X2::Alignment)
     entropy = Tuple{Int,Float64}[]
 
     for i in 1:length(bib1)
-	bib1[i][1] == bib2[i][1] || error("non harmonized fasta")
+        bib1[i][1] == bib2[i][1] || error("non harmonized fasta")
 
-	mini = min(bib1[i][2], bib2[i][2])
-	maxi = max(bib1[i][2], bib2[i][2])
+        mini = min(bib1[i][2], bib2[i][2])
+        maxi = max(bib1[i][2], bib2[i][2])
 
-	ent = sum([log(i) for i in (maxi-mini+1):maxi])
-	push!(entropy, (bib1[i][1], ent))
+        ent = sum([log(i) for i in (maxi-mini+1):maxi])
+        push!(entropy, (bib1[i][1], ent))
     end
     return [a[1] for a in filter(x->x[2]!=0, sort(entropy, by=x->x[2]))]
 end
@@ -111,17 +111,17 @@ function apply_matching!(X1, X2, match, lspec, lmatch)
     length(lspec) == length(lmatch) || error("data non compatible")
 
     for (i,el) in enumerate(lspec)
-	ind1 = find(spec_id1 .== el)
-	ind2 = find(spec_id2 .== el)
-	match[ind1[lmatch[i][1]]] = ind2[lmatch[i][2]]
+        ind1 = find(spec_id1 .== el)
+        ind2 = find(spec_id2 .== el)
+        match[ind1[lmatch[i][1]]] = ind2[lmatch[i][2]]
     end
     return nothing
 end
 
 """
     run_matching(X12::HarmonizedAlignments;
-		 batch = 1,
-		 strategy = "covariation",
+                 batch = 1,
+                 strategy = "covariation",
                  lpsolver = GLPKSolverLP())
 
 Returns the matching of the two alignments contained in `X12`, which need to be obtained by [`prepare_alignments`](@ref).
@@ -139,9 +139,9 @@ The keywords are:
                   A defaut of 0.5 gives sensible results, its value cannot be above 1.0.
 
 * `lpsolver`: linear programming solver used when performing the matching with the `"covariation"` strategy.
-	      The default uses a solver provided bu the `GLPK` library.
-	      You can override this by passing e.g. `lpsolver = GurobiSolver(OutputFlag=false)` or similar
-	      (see the documentation for `MathProgBase`).
+              The default uses a solver provided bu the `GLPK` library.
+              You can override this by passing e.g. `lpsolver = GurobiSolver(OutputFlag=false)` or similar
+              (see the documentation for `MathProgBase`).
 
 Available strategies are:
 
@@ -152,20 +152,20 @@ Available strategies are:
 + `"random"`: produces a random matching, only useful to produce null models.
 
 + `"genetic"`: tries to use the Uniprot ID information to determine which sequences belong to the
-	       same operon (only used for testing, not a valid general strategy)
+               same operon (only used for testing, not a valid general strategy)
 
 """
 function run_matching(X12::HarmonizedAlignments;
-		      batch::Integer = 1,
-		      pseudo_count::Float64 = 0.5,
-		      strategy::AbstractString = "covariation",
-		      lpsolver::MathProgBase.SolverInterface.AbstractMathProgSolver = default_lpsolver)
+                      batch::Integer = 1,
+                      pseudo_count::Float64 = 0.5,
+                      strategy::AbstractString = "covariation",
+                      lpsolver::MathProgBase.SolverInterface.AbstractMathProgSolver = default_lpsolver)
 
     X1, X2, match, freq, corr, invC = initialize_matching(X12, pseudo_count)
 
     valid_strats = ["covariation", "genetic", "random", "greedy"]
     strategy ∈ valid_strats ||
-	throw(ArgumentError("unknown strategy: $strategy. Must be one of: $(join(valid_strats, ", ", " or "))"))
+        throw(ArgumentError("unknown strategy: $strategy. Must be one of: $(join(valid_strats, ", ", " or "))"))
     pseudo_count>0.0 && (pseudo_count < 1.0) || throw(ArgumentError("invalid value of the pseudo_count, must be a real between 0.0 and 1.0"))
 
     # Computes the entropy of the families and batch them from easiest to hardest
@@ -175,23 +175,23 @@ function run_matching(X12::HarmonizedAlignments;
 
     # For each batch...
     for el in batchl
-	isempty(el) && continue
+        isempty(el) && continue
 
-	# Performs the matching for each species of the batch
-	res = par_corr(X1, X2, freq, invC, el, strategy, lpsolver)
-	println("batch of species")
-	println(el)
-	println(res)
+        # Performs the matching for each species of the batch
+        res = par_corr(X1, X2, freq, invC, el, strategy, lpsolver)
+        println("batch of species")
+        println(el)
+        println(res)
 
-	# Applies the matching to the global matching vector
-	apply_matching!(X1, X2, match, el, res)
+        # Applies the matching to the global matching vector
+        apply_matching!(X1, X2, match, el, res)
 
-	if strategy == "covariation" || strategy == "greedy"
-	    println("Recomputing the model")
-	    # Updates the freq and corr matrices, and its inverse
-	    unitFC!(X1, X2, match, el, freq)
-	    invC = inverse_with_pseudo!(corr, freq, pseudo_count)
-	end
+        if strategy == "covariation" || strategy == "greedy"
+            println("Recomputing the model")
+            # Updates the freq and corr matrices, and its inverse
+            unitFC!(X1, X2, match, el, freq)
+            invC = inverse_with_pseudo!(corr, freq, pseudo_count)
+        end
 
     end
     clear_inverse_mem()
@@ -201,9 +201,9 @@ end
 
 """
     paralog_matching(infile1::AbstractString, infile2::AbstractString, outfile::AbstractString;
-		     cutoff = 500,
-		     batch = 1,
-		     strategy = "covariation",
+                     cutoff = 500,
+                     batch = 1,
+                     strategy = "covariation",
                      lpsolver = GLPKSolverLP())
 
 This function performs the paralog matching from two given FASTA files containing the alignments for
@@ -220,13 +220,13 @@ Besides writing the `outfile`, this function also returns two values: the harmon
 by [`prepare_alignments`](@ref)) and the resulting match (as returned by [`run_matching`](@ref)).
 """
 function paralog_matching(infile1::AbstractString,
-			  infile2::AbstractString,
-			  outfile::AbstractString;
-			  cutoff::Integer = 500,
-			  batch::Integer = 1,
-			  strategy::AbstractString = "covariation",
-			  pseudo_count::Float64= 0.5,
-			  lpsolver::MathProgBase.SolverInterface.AbstractMathProgSolver = default_lpsolver)
+                          infile2::AbstractString,
+                          outfile::AbstractString;
+                          cutoff::Integer = 500,
+                          batch::Integer = 1,
+                          strategy::AbstractString = "covariation",
+                          pseudo_count::Float64= 0.5,
+                          lpsolver::MathProgBase.SolverInterface.AbstractMathProgSolver = default_lpsolver)
 
     X1 = read_fasta_alignment(infile1)
     X2 = read_fasta_alignment(infile2)

@@ -21,21 +21,21 @@ function ROC_curve(ndata, plm, split)
 
     for a in 1:size(score)[1]
 
-	# ugliness
-	ind = findfirst(comp, (score[a,1]) + (score[a,2]) * im)
+        # ugliness
+        ind = findfirst(comp, (score[a,1]) + (score[a,2]) * im)
 
-	ind != 0 || continue
+        ind != 0 || continue
 
-	if (((score[a,1] <= split) && (score[a,2] <= split)) || ((score[a,1] > split) && (score[a,2] > split))) && (abs(score[a,1] - score[a,2]) > 4)
-	    data[ind,3] > 8 || (trueintra += 1)
-	    intra += 1
-	    push!(curveintra, trueintra / intra)
+        if (((score[a,1] <= split) && (score[a,2] <= split)) || ((score[a,1] > split) && (score[a,2] > split))) && (abs(score[a,1] - score[a,2]) > 4)
+            data[ind,3] > 8 || (trueintra += 1)
+            intra += 1
+            push!(curveintra, trueintra / intra)
 
-	elseif (score[a,1] <= split) && (score[a,2] > split)
-	    data[ind,3] > 8 || (trueinter += 1)
-	    inter += 1
-	    push!(curveinter, trueinter / inter)
-	end
+        elseif (score[a,1] <= split) && (score[a,2] > split)
+            data[ind,3] > 8 || (trueinter += 1)
+            inter += 1
+            push!(curveinter, trueinter / inter)
+        end
     end
     return curveinter, curveintra
 end
@@ -47,11 +47,11 @@ function curve_true(ordering)
     sorted = sort([ordering...], by=x->x[2])
     rocc = Float64[]
     for el in sorted
-	if el[1][1] == el[1][2]
-	    trueprop += 1
-	end
-	count += 1
-	push!(rocc, trueprop / count)
+        if el[1][1] == el[1][2]
+            trueprop += 1
+        end
+        count += 1
+        push!(rocc, trueprop / count)
     end
     return rocc
 end
@@ -84,15 +84,15 @@ function post_order_scores(X1, X2, match)
     nullconst = 1/2 * (logdet(corr.Cij) - logdet(corr.Cij[1:len1,1:len1]) - logdet(corr.Cij[len1+1:end,len1+1:end]))
 
     for i in 1:lines
-	match[i] != 0 || continue
+        match[i] != 0 || continue
 
-	seq1 = expand_binary(X1.Z[i,:], 20)[:]
-	seq2 = expand_binary(X2.Z[match[i],:], 20)[:]
-	seq = [seq1;seq2]
-	score = -(((seq-aver)[1:len1]') * invC[1:len1,len1+1:end] * ((seq-aver)[len1+1:end]))[1] - nullconst
-	println((i, match[i], score))
+        seq1 = expand_binary(X1.Z[i,:], 20)[:]
+        seq2 = expand_binary(X2.Z[match[i],:], 20)[:]
+        seq = [seq1;seq2]
+        score = -(((seq-aver)[1:len1]') * invC[1:len1,len1+1:end] * ((seq-aver)[len1+1:end]))[1] - nullconst
+        println((i, match[i], score))
 
-	push!(ordering, (i, match[i], score))
+        push!(ordering, (i, match[i], score))
     end
     sort!(ordering, by=x->x[3], rev=true)
     tab = hcat([[a...] for a in ordering]...)'
@@ -127,25 +127,25 @@ function full_edges_scores(X1, X2, match)
 
     println(nullconst)
     for i in 1:lines
-	for j in pairings[i]
-	    seq1 = expand_binary(X1.Z[i,:], 20)[:]
-	    seq2 = expand_binary(X2.Z[j,:], 20)[:]
+        for j in pairings[i]
+            seq1 = expand_binary(X1.Z[i,:], 20)[:]
+            seq2 = expand_binary(X2.Z[j,:], 20)[:]
 
-	    seq = [seq1;seq2]
-	    score = -(((seq-aver)[1:len1]') * invC[1:len1,len1+1:end] * ((seq-aver)[len1+1:end]))[1] - nullconst
-	    println(((i, j), score))
-	    if (X1.spec_id[i] == flag)
-		push!(suborder, ((i, j), score))
-	    end
+            seq = [seq1;seq2]
+            score = -(((seq-aver)[1:len1]') * invC[1:len1,len1+1:end] * ((seq-aver)[len1+1:end]))[1] - nullconst
+            println(((i, j), score))
+            if (X1.spec_id[i] == flag)
+                push!(suborder, ((i, j), score))
+            end
 
-	    if (X1.spec_id[i] != flag) || (i == lines)
-		sort!(suborder, by=x->x[2], rev=true)
-		push!(ordering, suborder)
-		suborder = Tuple{Tuple{Float64,Float64},Float64}[]
-		push!(suborder, ((i, j), score))
-		flag = X1.spec_id[i]
-	    end
-	end
+            if (X1.spec_id[i] != flag) || (i == lines)
+                sort!(suborder, by=x->x[2], rev=true)
+                push!(ordering, suborder)
+                suborder = Tuple{Tuple{Float64,Float64},Float64}[]
+                push!(suborder, ((i, j), score))
+                flag = X1.spec_id[i]
+            end
+        end
     end
     return X1, X2, match, ordering
 end
@@ -153,9 +153,9 @@ end
 function selecting_edges(ordering, thres)
     order2 = Vector{Tuple{Tuple{Float64,Float64},Float64}}[]
     for el in ordering
-	len = length(el)
-	extr = sort(el,by=x->x[2])[1:min(len,thres)]
-	push!(order2, extr)
+        len = length(el)
+        extr = sort(el,by=x->x[2])[1:min(len,thres)]
+        push!(order2, extr)
     end
     return order2
 end
@@ -181,11 +181,11 @@ function compute_score(score, split)
     mean = 0
     l = size(score)[1]
     for i in 1:l
-	if (score[i,1] <= split) && (score[i,2] > split)
-	    counter += 1
-	    mean += score[i, 3]
-	end
-	counter == 4 && break
+        if (score[i,1] <= split) && (score[i,2] > split)
+            counter += 1
+            mean += score[i, 3]
+        end
+        counter == 4 && break
     end
     return mean / 4
 end

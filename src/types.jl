@@ -38,11 +38,11 @@ type FreqC
     matching::Vector{Int}
     q::Int
     function FreqC(X1::Alignment, X2::Alignment)
-	@extract X1 : N1=N M q
-	@extract X2 : N2=N
-	N = N1 + N2
-	s = q - 1
-	return new(zeros(s * N, s * N), zeros(N * s), [], [0, 0], zeros(M), q)
+        @extract X1 : N1=N M q
+        @extract X2 : N2=N
+        N = N1 + N2
+        s = q - 1
+        return new(zeros(s * N, s * N), zeros(N * s), [], [0, 0], zeros(M), q)
     end
 end
 
