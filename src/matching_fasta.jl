@@ -184,9 +184,13 @@ function run_matching(X12::HarmonizedAlignments;
         # Performs the matching for each species of the batch
         res = par_corr(X1, X2, freq, invC, el, strategy, lpsolver)
         println("batch of species")
-        println(el)
-        println(res)
-
+        
+        for (i,spids) in enumerate(el)
+            println(X1.spec_name[spids]," ")
+            println(res[i])
+        end
+        println()
+        
         # Applies the matching to the global matching vector
         apply_matching!(X1, X2, match, el, res)
 
