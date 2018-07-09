@@ -2,7 +2,11 @@
 
 ########################## OPTIMIZATION AND MATCHING BLOCK ###################################
 
-function mpbmatch{T<:AbstractFloat}(D::DenseMatrix{T}, solver::MathProgBase.AbstractMathProgSolver)
+const rmul! = VERSION < v"0.7-" ? scale! : Compat.LinearAlgebra.rmul!
+const chol! = VERSION < v"0.7-" ? cholfact! : cholesky!
+const rep = VERSION < v"0.7-" ? repmat : repeat
+
+function mpbmatch(D::DenseMatrix{T}, solver::MathProgBase.AbstractMathProgSolver) where {T<:AbstractFloat}
     N1, N2 = size(D)
 
     A = matching_matrix(N1, N2)
@@ -20,8 +24,8 @@ function mpbmatch{T<:AbstractFloat}(D::DenseMatrix{T}, solver::MathProgBase.Abst
 end
 
 function matching_matrix(N1::Int, N2::Int)
-    I = Array{Int}(2 * N1 * N2)
-    J = Array{Int}(2 * N1 * N2)
+    I = Array{Int}(undef, 2 * N1 * N2)
+    J = Array{Int}(undef, 2 * N1 * N2)
     V = ones(2 * N1 * N2)
 
     t = 1
@@ -45,7 +49,7 @@ end
 
 # Gets both the lines of alignments matched for a given list of specs
 function get_edges(X1, X2, match, specs::Vector{Int})
-    ind = find([a in specs for a in X1.spec_id])
+    ind = findall([a in specs for a in X1.spec_id] .≠ 0)
     filter!(x->match[x]!=0, ind)
     return ind, match[ind]
 end
@@ -157,7 +161,7 @@ function unitFC!(X1, X2, match, nspecs, prior)
 
     prior.specs = sort([prior.specs; nspecs])
     M[1] += len
-    copy!(prior.matching, match)
+    copyto!(prior.matching, match)
     return nothing
 end
 
@@ -172,8 +176,8 @@ function full_COD!(prev::FastC, freq::FreqC)
 
     #Cij[:] = 1.0 / m * Pij[:] - 1.0 / m^2 * (Pi * Pi')[:]
     N = length(Pi)
-    copy!(Cij, Pij)
-    scale!(Cij, 1/m)
+    copyto!(Cij, Pij)
+    rmul!(Cij, 1/m)
     @inbounds for j = 1:N
         Pj = Pi[j]
         @simd for i = 1:N
@@ -184,7 +188,7 @@ function full_COD!(prev::FastC, freq::FreqC)
     prev.M[1] = M[1]
     prev.M[2] = M[2]
     resize!(prev.specs, length(specs))
-    copy!(prev.specs, specs)
+    copyto!(prev.specs, specs)
 
     return nothing
 end
@@ -220,8 +224,8 @@ function give_correction(X1, X2, freq::FreqC, invC::Matrix{Float64}, spec::Int, 
 
     # First covariation/greedy strategy
     if strategy ∈ ("covariation", "greedy")
-        ind1 = find(spec1 .== spec)
-        ind2 = find(spec2 .== spec)
+        ind1 = findall(spec1 .== spec)
+        ind2 = findall(spec2 .== spec)
 
         # takes the sequences of the "spec"
         Zb1 = expand_binary(Z1[ind1,:], s)
@@ -231,8 +235,8 @@ function give_correction(X1, X2, freq::FreqC, invC::Matrix{Float64}, spec::Int, 
 
         # extracts the mean of the prior (one could add the additional contribution brought by the "spec")
         # but it does not change the results and we consider non bijective case here
-        vmean1 = repmat(Pi' / m, length(ind1))[:,r1]
-        vmean2 = repmat(Pi' / m, length(ind2))[:,r2]
+        vmean1 = rep(Pi' / m, length(ind1))[:,r1]
+        vmean2 = rep(Pi' / m, length(ind2))[:,r2]
 
         # the cost function as the matching algorithm wants it
         cost = (Zb1-vmean1) * invC[r1,r2] * (Zb2-vmean2)'
@@ -259,8 +263,8 @@ function give_correction(X1, X2, freq::FreqC, invC::Matrix{Float64}, spec::Int, 
 
     # Random matching to test null hypothesis
     elseif strategy == "random"
-        ind1 = find(spec1 .== spec)
-        ind2 = find(spec2 .== spec)
+        ind1 = findall(spec1 .== spec)
+        ind2 = findall(spec2 .== spec)
         mini = min(length(ind1), length(ind2))
         permres = (randperm(length(ind1))[1:mini], randperm(length(ind2))[1:mini])
     else
@@ -279,8 +283,8 @@ end
 # ind2:matched rowd of the second alignment
 function convert_perm_mat(mat)
     len1, len2 = size(mat)
-    ind1 = find([!isempty(find(mat[i,:])) for i in 1:len1])
-    ind2 = [findfirst(mat[i,:]) for i in ind1]
+    ind1 = findall([!isempty(findall(mat[i,:] .≠ 0)) for i in 1:len1] .≠ 0)
+    ind2 = [findfirst(x->x≠0, mat[i,:]) for i in ind1]
     return ind1, ind2
 end
 
@@ -293,12 +297,12 @@ let Cdict = Dict{Int,Matrix{Float64}}()
         Mfake = round(Int, ((M[1]+M[2])*pc - M[2]) / (1-pc))
 
         L = length(Pi)
-        CC = Base.@get!(Cdict, L, Array{Float64}(L, L))
+        CC = Base.@get!(Cdict, L, Array{Float64}(undef, L, L))
 
         add_pseudocount!(freq, Mfake)
         full_COD!(prev, freq)
-        copy!(CC, prev.Cij)
-        inter = Base.LinAlg.inv!(cholfact!(CC))
+        copyto!(CC, prev.Cij)
+        inter = Compat.LinearAlgebra.inv!(chol!(CC))
         return inter
     end
     clear_inverse_mem() = empty!(Cdict)
@@ -328,7 +332,7 @@ function add_pseudocount!(freq::FreqC, Mfake::Int)
 
     i0 = 0
     @inbounds for i = 1:N
-        xr = i0 + (1:s)
+        xr = i0 .+ (1:s)
         for x2 in xr, x1 in xr
             Pij[x1, x2] -= pcqq
         end
@@ -359,8 +363,8 @@ function cost_from_annot(X1, X2, spec)
     @extract X1 : spec1=spec_id Z1=Z N1=N
     @extract X2 : spec2=spec_id Z2=Z N2=N
 
-    ind1 = find(spec1 .== spec)
-    ind2 = find(spec2 .== spec)
+    ind1 = findall(spec1 .== spec)
+    ind2 = findall(spec2 .== spec)
     cost = Float64[abs(annot2num(X1.uniprot_id[i]) - annot2num(X2.uniprot_id[j])) for i in ind1, j in ind2]
     return cost
 end

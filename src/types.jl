@@ -2,7 +2,7 @@
 
 ########################### BLOCK FOR TYPES DEFINITION AND ALLOCATION #####################
 
-immutable Alignment
+struct Alignment
     N::Int
     M::Int
     q::Int
@@ -16,7 +16,7 @@ end
 
 Base.:(==)(X1::Alignment, X2::Alignment) = all(fn->getfield(X1, fn) == getfield(X2, fn), fieldnames(Alignment))
 
-immutable HarmonizedAlignments
+struct HarmonizedAlignments
     X1::Alignment
     X2::Alignment
 end
@@ -30,7 +30,7 @@ Base.:(==)(H1::HarmonizedAlignments, H2::HarmonizedAlignments) =
 # M contains the number of sequences and their pseudo count
 # matching contains the current matching between the two alignments used to compute FreqC
 # q is the number of different amino acids
-type FreqC
+mutable struct FreqC
     Pij::Matrix{Float64}
     Pi::Vector{Float64}
     specs::Vector{Int}
@@ -49,7 +49,7 @@ end
 # FastC is the type of the correlation matrix
 # specs is the specs presently matched and used for the computation
 # M contains the number of sequences and their pseudo count
-type FastC
+mutable struct FastC
     Cij::Matrix{Float64}
     specs::Vector{Int}
     M::Vector{Int}

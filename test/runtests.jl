@@ -2,7 +2,7 @@ module ParalogMatchingTests
 
 using ParalogMatching
 using FastaIO
-using Base.Test
+using Compat.Test
 
 const testfile1 = "X1.fasta.gz"
 const testfile2 = "X2.fasta.gz"

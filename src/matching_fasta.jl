@@ -28,7 +28,7 @@ function start_matching(X12::HarmonizedAlignments)
     @extract X12 : X1 X2
     @extract X1  : spec_id1=spec_id
     @extract X2  : spec_id2=spec_id
-    match = zeros(spec_id1)
+    match = fill!(similar(spec_id1), 0)
 
     # Finds the indices of the species with one single sequence
     ind1 = index_of_unique(spec_id1)
@@ -37,8 +37,8 @@ function start_matching(X12::HarmonizedAlignments)
     candi = intersect(spec_id1[ind1], spec_id2[ind2])
 
     for el in candi
-        a1 = findfirst(spec_id1, el)
-        a2 = findfirst(spec_id2, el)
+        a1 = findfirst(isequal(el), spec_id1)::Int
+        a2 = findfirst(isequal(el), spec_id2)::Int
         match[a1] = a2
     end
     return match
@@ -58,13 +58,13 @@ function initialize_matching(X12::HarmonizedAlignments, pseudo_count::Float64)
     corr = FastC(freq)
 
     # First compute corr from single matched families
-    single = X1.spec_id[find(match)]
+    single = X1.spec_id[findall(match .≠ 0)]
 
     # Computes the freq matrix for the given matched species "single"
     unitFC!(X1, X2, match, single, freq)
 
     # Finally compute the inverse of the corr matrix
-    if isempty(find(match))
+    if isempty(findall(match .≠ 0))
 	println("WARNING ! 0 sequence matched by uniqueness. No covariation strategy possible.")
 	invC = zeros(size(corr.Cij))
     else
@@ -115,8 +115,8 @@ function apply_matching!(X1, X2, match, lspec, lmatch)
     length(lspec) == length(lmatch) || error("data non compatible")
 
     for (i,el) in enumerate(lspec)
-        ind1 = find(spec_id1 .== el)
-        ind2 = find(spec_id2 .== el)
+        ind1 = findall(spec_id1 .== el)
+        ind2 = findall(spec_id2 .== el)
         match[ind1[lmatch[i][1]]] = ind2[lmatch[i][2]]
     end
     return nothing
@@ -184,13 +184,13 @@ function run_matching(X12::HarmonizedAlignments;
         # Performs the matching for each species of the batch
         res = par_corr(X1, X2, freq, invC, el, strategy, lpsolver)
         println("batch of species")
-        
+
         for (i,spids) in enumerate(el)
             println(X1.spec_name[spids]," ")
             println(res[i])
         end
         println()
-        
+
         # Applies the matching to the global matching vector
         apply_matching!(X1, X2, match, el, res)
 

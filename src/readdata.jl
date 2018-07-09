@@ -37,7 +37,7 @@ then you can use a regex like this one: `header_regex=r"^(?<species>[^/]+)/([^/]
 i.e. line start, anything except a slash (capture as the species name), followed by a slash, then anything
 except a slash (captured but ignored), followed by a slash, then the rest of the line (captured as the ID).
 """
-function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float64 = 1.0; header_regex::Union{Void,Regex} = nothing)
+function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float64 = 1.0; header_regex::Union{Nothing,Regex} = nothing)
     f = FastaReader(filename)
 
     # pass 1
@@ -80,9 +80,9 @@ function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float6
 
     # pass 2
 
-    Z = Array{Int8}(fseqlen, length(seqs))
-    header =  Array{String}(length(seqs));
-    sequence =  Array{String}(length(seqs));
+    Z = Array{Int8}(undef, fseqlen, length(seqs))
+    header =  Array{String}(undef, length(seqs));
+    sequence =  Array{String}(undef, length(seqs));
     seqid = 1
     for (name, seq) in f
         header[seqid] = name
@@ -104,10 +104,10 @@ function read_fasta_alignment(filename::AbstractString, max_gap_fraction::Float6
     return Alignment(size(Z, 1), size(Z, 2), Int(maximum(Z)), Z', sequence, header, spec_name, spec_id, uniprot_id)
 end
 
-function specname(s::String, header_regex::Union{Void,Regex}, captureinds::NTuple{2,Integer})
+function specname(s::String, header_regex::Union{Nothing,Regex}, captureinds::NTuple{2,Integer})
     if header_regex ≢ nothing
         # user-defined format
-        if ismatch(header_regex, s)
+        if occursin(header_regex, s)
             captures = match(header_regex, s).captures
             length(captures) ≥ 2 ||
                 error("invalid header regex: should always return at least 2 captured groups if it matches; has returned: $(length(captures))")
@@ -124,14 +124,14 @@ function specname(s::String, header_regex::Union{Void,Regex}, captureinds::NTupl
         regex_joined = r"^(.*?)::(.*?)/(.*)$"
 
         # standard format
-        if ismatch(regex_uniprot, s)
+        if occursin(regex_uniprot, s)
             uniprot_id, spec_name = match(regex_uniprot, s).captures
 
         # custom internal formats
-        elseif ismatch(regex_oldskrr, s)
+        elseif occursin(regex_oldskrr, s)
             spec_name = match(regex_oldskrr, s).captures[1]
             uniprot_id = "000000"
-        elseif ismatch(regex_joined, s)
+        elseif occursin(regex_joined, s)
             spec_name = match(regex_joined, s).captures[3]
             uniprot_id = "000000"
         else
@@ -141,11 +141,11 @@ function specname(s::String, header_regex::Union{Void,Regex}, captureinds::NTupl
     return convert(String, uniprot_id), convert(String, spec_name)
 end
 
-function compute_spec(header::Vector{String}, header_regex::Union{Void,Regex} = nothing)
+function compute_spec(header::Vector{String}, header_regex::Union{Nothing,Regex} = nothing)
     M = length(header)
 
-    spec_name = Array{String}(M)
-    uniprot_id  = Array{String}(M)
+    spec_name = Array{String}(undef, M)
+    uniprot_id  = Array{String}(undef, M)
 
     captureinds = (1,2)
     if header_regex ≢ nothing

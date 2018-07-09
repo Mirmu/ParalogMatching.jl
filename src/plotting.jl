@@ -169,7 +169,7 @@ function trim_cov_match(nameX1, nameX2, namematch, prop, nameoutput)
     propo = round(Int, prop * len)
     edges1 = Int[a[1][1] for a in retsor[1:propo]]
     edges2 = Int[a[1][2] for a in retsor[1:propo]]
-    nuovomatch = zeros(X1.M)
+    nuovomatch = fill(0.0, X1.M)
     nuovomatch[edges1] = edges2
 
     write_fasta_match(X1, X2, nuovomatch, nameoutput)
