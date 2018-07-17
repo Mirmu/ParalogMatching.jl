@@ -22,7 +22,7 @@ The code is written in [Julia](http://julialang.org), and the functions are call
 from within Julia. However, a [command-line interface](@ref CLI) is also provided for
 those unfamiliar with the language.
 
-The current code was tested on Julia versions 0.4 and 0.5.
+The current code was tested on Julia versions 0.6 and 0.7.
 
 ### Installation
 

@@ -25,7 +25,7 @@ The code is written in [Julia][julia], and the functions are called
 from within Julia. However, a command-line interface is also provided for
 those unfamiliar with the language (see the documentation).
 
-The package is tested against Julia `0.5` and `0.6` on Linux, OS X, and Windows.
+The package is tested against Julia `0.6` and `0.7` on Linux, OS X, and Windows.
 
 ## Installation
 

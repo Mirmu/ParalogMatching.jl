@@ -2,7 +2,9 @@
 
 module ParalogMatching
 
-using FastaIO, ExtractMacro, Iterators
+using Compat
+using Compat.LinearAlgebra, Compat.Random, Compat.SparseArrays
+using FastaIO, ExtractMacro
 using Distributions
 using MathProgBase
 using GLPKMathProgInterface
